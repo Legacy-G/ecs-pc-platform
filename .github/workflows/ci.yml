@@ -157,12 +157,16 @@ jobs:
 
       - name: Run TFLint with AWS ruleset
         run: |
-          docker run --rm -v "${GITHUB_WORKSPACE}:/data" \
+          docker run --rm \
+            -v "${GITHUB_WORKSPACE}:/data" \
+            -v "${RUNNER_TEMP}:/root/.tflint.d" \
             "ghcr.io/terraform-linters/tflint:v${TFLINT_VERSION}" \
             --init --config=/data/.tflint.hcl
           for dir in infra/bootstrap infra/envs/shared infra/envs/dev infra/envs/prod; do
             echo "TFLint $dir"
-            docker run --rm -v "${GITHUB_WORKSPACE}:/data" \
+            docker run --rm \
+              -v "${GITHUB_WORKSPACE}:/data" \
+              -v "${RUNNER_TEMP}:/root/.tflint.d" \
               "ghcr.io/terraform-linters/tflint:v${TFLINT_VERSION}" \
               --config=/data/.tflint.hcl --chdir="/data/${dir}"
           done
