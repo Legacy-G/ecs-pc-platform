@@ -1,0 +1,44 @@
+Stack: infra/envs/shared (region=eu-north-1, state=local/unapplied, apply=false)
+
+Data Sources Evaluated:
+  data.aws_caller_identity.current
+  module.iam_ci.data.aws_caller_identity.current
+  module.iam_ci.data.aws_iam_policy_document.ci_deploy
+
+Planned Managed Resources (6 to add):
+  + module.ecr.aws_ecr_repository.this
+      name                 = "damolak-api"
+      image_tag_mutability = "IMMUTABLE"
+      force_delete         = true
+      image_scanning_configuration[0].scan_on_push = true
+      encryption_configuration[0].encryption_type  = "AES256"
+  + module.ecr.aws_ecr_lifecycle_policy.this
+      repository = "damolak-api"
+      policy     = (rule 1: expire untagged > 1 day; rule 2: retain last 10 images)
+  + module.iam_ci.aws_iam_policy.permissions_boundary
+      name        = "damolak-jenkins-ci-boundary"
+      description = "Permissions boundary for the local Jenkins CI IAM user"
+  + module.iam_ci.aws_iam_user.jenkins_ci
+      name                 = "damolak-jenkins-ci"
+      permissions_boundary = (known after apply)
+      force_destroy        = true
+  + module.iam_ci.aws_iam_user_policy_attachment.jenkins_ci
+      user       = "damolak-jenkins-ci"
+      policy_arn = (known after apply)
+  + module.budgets.aws_budgets_budget.monthly
+      name         = "damolak-monthly-gross-budget"
+      budget_type  = "COST"
+      limit_amount = "40"
+      limit_unit   = "USD"
+      time_unit    = "MONTHLY"
+      cost_types[0].include_credit = false
+      notification = [50% ACTUAL, 80% ACTUAL, 100% ACTUAL -> subscriber_email_addresses = (sensitive)]
+
+Plan: 6 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + budget_name                        = "damolak-monthly-gross-budget"
+  + ecr_repository_arn                 = (known after apply)
+  + ecr_repository_url                 = (known after apply)
+  + jenkins_ci_permissions_boundary_arn = (known after apply)
+  + jenkins_ci_user_name               = "damolak-jenkins-ci"

@@ -63,7 +63,7 @@ Committed `.tfvars.example` files never contain email addresses or account IDs. 
 
 **When required:** Phase 3 (after explicit chat approval, before starting the ECS service).
 
-The `/api/v1/echo/` endpoint requires an `X-API-Key` header loaded from SSM Parameter Store (`SecureString`, standard tier) at `/damolak/dev/api/api_key`. The key is generated and written by `scripts/create-api-key.sh` so the secret value never enters Terraform state or git history:
+The `/api/v1/echo/` endpoint requires an `X-API-Key` header loaded from SSM Parameter Store (`SecureString`, standard tier) at `/damolak/dev/api-key`. The key is generated and written out-of-band so the secret value never enters Terraform state or git history:
 
 ```bash
 AWS_PROFILE=damolak AWS_REGION=eu-north-1 bash scripts/create-api-key.sh dev
@@ -81,17 +81,17 @@ AWS_PROFILE=damolak AWS_REGION=eu-north-1 bash scripts/create-api-key.sh dev
 
 ---
 
-## 6. Jenkins Controller Credentials (`jenkins-ci`)
+## 6. Jenkins Controller Credentials (`damolak-jenkins-ci`)
 
 **When required:** Phase 4.
 
-Terraform in `infra/envs/shared` creates the IAM user `jenkins-ci` (whose sole permission is `sts:AssumeRole` on the deployment role), but **never** creates an `aws_iam_access_key` resource so the secret key stays out of `.tfstate`.
+Terraform in `infra/envs/shared` creates the IAM user `damolak-jenkins-ci` constrained by the `damolak-jenkins-ci-boundary` permissions boundary, but **never** creates an `aws_iam_access_key` resource so the secret key stays out of `.tfstate`.
 
 1. After approving the `shared` apply, run the helper script to generate the key via the AWS CLI and load it into the local Jenkins credential store:
    ```bash
    AWS_PROFILE=damolak bash scripts/create-jenkins-key.sh
    ```
-2. Open `http://127.0.0.1:8080`, sign in with the local admin password from `.env`, go to **Manage Jenkins -> Credentials -> System -> Global credentials**, and verify credential IDs `aws-jenkins-ci` and `aws-deploy-role-arn` are populated.
+2. Open `http://127.0.0.1:8080`, sign in with the local admin password from `.env`, go to **Manage Jenkins -> Credentials -> System -> Global credentials**, and verify credential ID `aws-jenkins-ci` is populated, then delete `jenkins-ci-access-key.json`.
 
 ---
 
@@ -108,3 +108,14 @@ Because the account SCP blocks creating an IAM OIDC identity provider on the Fre
 ## 8. Explicit Approval Gates for Cloud Changes
 
 No command that creates, modifies, or deletes AWS resources (`terraform apply`, `terraform destroy`, `aws ssm put-parameter`, `aws iam create-access-key`) will ever be executed by the assistant without first printing the estimated hourly and daily credit impact and receiving explicit approval in chat.
+
+---
+
+## 9. Teardown Tiers (`make down` vs `make nuke`)
+
+1. **`make down` (`scripts/down.sh` - Routine Dev Teardown):**
+   - Destroys `infra/envs/dev` (VPC, subnets, internet gateway, Application Load Balancer, target group, ECS cluster, ECS service, task definitions, IAM task roles, CloudWatch log group, metric filter, 5 alarms, dashboard, and SNS topic) and runs `scripts/cost-check.sh`.
+   - Leaves `infra/envs/shared` (ECR repository `damolak-api`, IAM user `damolak-jenkins-ci`, and monthly AWS Cost Budget) and `infra/bootstrap` (S3 remote state bucket) intact so subsequent `dev` deployments take ~2 minutes without rebuilding state or re-pushing base layers.
+   - **Residual cost after `make down`:** Hourly compute and ALB cost drops to **USD 0.0000/hr**. Storage left behind consists of ~80 MB compressed container layers in ECR (`USD 0.10/GB-month` -> ~**USD 0.008/month**) and < 100 KB of `.tfstate` objects in S3 (~**USD 0.001/month**), totaling **< USD 0.01/month**.
+2. **`make nuke` (`scripts/nuke.sh` - Complete Account Cleanup):**
+   - Requires interactive confirmation (`NUKE`), then destroys `infra/envs/dev`, deletes SSM parameter `/damolak/dev/api-key`, destroys `infra/envs/shared` (including force-deleting the ECR repository), empties all object versions/delete markers in the `infra/bootstrap` S3 bucket and destroys the bucket, removes local `backend.hcl` files, and runs `scripts/cost-check.sh` to verify zero remaining billable resources.

@@ -1,6 +1,9 @@
-"""Tests for POST /api/v1/echo/."""
+"""Tests for POST /api/v1/echo/ and non-local API key enforcement."""
 
+import pytest
+from app.config import Settings
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 
 
 def test_echo_rejects_missing_api_key(client: TestClient) -> None:
@@ -43,3 +46,10 @@ def test_echo_rejects_extra_fields(client: TestClient) -> None:
         json={"message": "valid", "unexpected": "field"},
     )
     assert response.status_code == 422
+
+
+def test_settings_refuses_non_local_startup_without_api_key() -> None:
+    with pytest.raises(ValidationError, match="API_KEY must be configured"):
+        Settings(app_env="dev", api_key="")
+    with pytest.raises(ValidationError, match="API_KEY must be configured"):
+        Settings(app_env="production", api_key="   ")

@@ -49,3 +49,46 @@ def test_health_with_ecs_metadata_reachable(monkeypatch: pytest.MonkeyPatch) -> 
         resp = local_client.get("/api/v1/health/")
     assert resp.status_code == 200
     assert resp.json()["checks"]["metadata"] == "ok"
+
+
+def test_health_returns_200_when_ecs_metadata_degraded(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def failing_get(url: str, timeout: float) -> httpx.Response:
+        raise httpx.ConnectError("metadata unreachable", request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(httpx, "get", failing_get)
+    settings = Settings(
+        app_env="dev",
+        api_key="unit-test-secret-key",
+        ecs_container_metadata_uri_v4="http://169.254.170.2/v4/container-id",
+    )
+    app = create_app()
+    app.dependency_overrides[get_settings] = lambda: settings
+    with TestClient(app) as local_client:
+        resp = local_client.get("/api/v1/health/")
+    assert resp.status_code == 200
+    assert resp.json() == {
+        "status": "ok",
+        "checks": {
+            "config": "ok",
+            "metadata": "degraded",
+        },
+    }
+
+
+def test_proxy_headers_cidr_extracts_real_client_ip(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+
+    app = create_app()
+    wrapped = ProxyHeadersMiddleware(app, trusted_hosts="10.20.0.0/16,127.0.0.1")
+    with TestClient(wrapped, client=("10.20.1.25", 50000)) as proxy_client:
+        resp = proxy_client.get(
+            "/api/v1/health/",
+            headers={"X-Forwarded-For": "198.51.100.42, 10.20.1.25"},
+        )
+    assert resp.status_code == 200
+    stdout = capsys.readouterr().out
+    assert '"client_ip":"198.51.100.42"' in stdout

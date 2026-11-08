@@ -1,0 +1,26 @@
+$ bash scripts/smoke.sh http://127.0.0.1:8000 local-dev
+Smoke testing http://127.0.0.1:8000 (expected_sha=local-dev)
+Attempt 1/20 not ready yet; sleeping 6s...
+smoke-test: PASS on attempt 2/20
+health: {"status":"ok","checks":{"config":"ok","metadata":"skipped"}}
+info  : {"service":"damolak-api","version":"0.1.0","git_sha":"local-dev","environment":"local","aws_region":"eu-north-1","task_id":"local","availability_zone":"local","started_at":"2026-11-08T15:13:23.943957Z","uptime_seconds":3.78}
+
+$ curl -s -i -X POST http://127.0.0.1:8000/api/v1/echo/ -H "Content-Type: application/json" -d '{"message":"hello"}'
+HTTP/1.1 401 Unauthorized
+date: Sun, 08 Nov 2026 15:13:27 GMT
+server: uvicorn
+content-length: 49
+content-type: application/json
+x-request-id: c96696b6-7aa8-4dbf-87ec-cc41c7b11e2a
+
+{"detail":"Invalid or missing X-API-Key header."}
+
+$ curl -s -i -X POST http://127.0.0.1:8000/api/v1/echo/ -H "Content-Type: application/json" -H "X-API-Key: <redacted-local-key>" -H "X-Request-ID: smoke-req-101" -d '{"message":"hello","attributes":{"env":"local"}}'
+HTTP/1.1 200 OK
+date: Sun, 08 Nov 2026 15:13:28 GMT
+server: uvicorn
+content-length: 162
+content-type: application/json
+x-request-id: smoke-req-101
+
+{"echo":"hello","attributes":{"env":"local"},"environment":"local","git_sha":"local-dev","request_id":"smoke-req-101","received_at":"2026-11-08T15:13:28.654141Z"}

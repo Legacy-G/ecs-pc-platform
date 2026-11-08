@@ -1,0 +1,4 @@
+alert_email = "operator@example.com"
+image_tag   = "initial"
+git_sha     = "initial"
+app_version = "0.1.0"
