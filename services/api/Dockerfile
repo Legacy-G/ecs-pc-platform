@@ -12,7 +12,8 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:${PATH}"
 
 COPY requirements.lock ./
-RUN pip install --no-deps --require-hashes -r requirements.lock
+RUN pip install --no-deps --require-hashes -r requirements.lock && \
+    pip uninstall -y pip
 
 FROM python:3.13-slim-bookworm@sha256:a5a7017efc5969e00ae2b91c8eb0631049a569652aa4ffc4501769049ae45c72 AS runtime
 
@@ -31,7 +32,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     FORWARDED_ALLOW_IPS="127.0.0.1"
 
 RUN groupadd --gid 10001 appgroup && \
-    useradd --uid 10001 --gid 10001 --create-home --shell /usr/sbin/nologin appuser
+    useradd --uid 10001 --gid 10001 --create-home --shell /usr/sbin/nologin appuser && \
+    rm -rf /usr/local/lib/python3.13/site-packages/pip* /usr/local/bin/pip*
 
 WORKDIR /app
 
