@@ -85,7 +85,7 @@ AWS_PROFILE=damolak AWS_REGION=eu-north-1 bash scripts/create-api-key.sh dev
 
 **When required:** Phase 4.
 
-Terraform in `infra/envs/shared` creates the IAM user `jenkins-ci` (whose sole permission is `sts:AssumeRole` on the deployment role), but **never** creates an `aws_iam_access_key` resource so the secret key is stayed out of `.tfstate`.
+Terraform in `infra/envs/shared` creates the IAM user `jenkins-ci` (whose sole permission is `sts:AssumeRole` on the deployment role), but **never** creates an `aws_iam_access_key` resource so the secret key stays out of `.tfstate`.
 
 1. After approving the `shared` apply, run the helper script to generate the key via the AWS CLI and load it into the local Jenkins credential store:
    ```bash
@@ -95,13 +95,13 @@ Terraform in `infra/envs/shared` creates the IAM user `jenkins-ci` (whose sole p
 
 ---
 
-## 7. GitHub Actions AWS Credentials (Phase 5 SCP Constraint)
+## 7. GitHub Actions Scope (CI-Only Mirror)
 
-**Finding from Phase 0 SCP check:** AWS Free Plan accounts sit inside an AWS-managed Organization (`o-gqkq46rcgb`) whose Service Control Policy (`p-c6y4cj6o`) explicitly denies `iam:CreateOpenIDConnectProvider` and `iam:ListOpenIDConnectProviders`, and restricts regional resource creation to `eu-north-1`.
+**Finding from Phase 0 SCP check:** AWS Free Plan accounts sit inside an AWS-managed Organization whose Service Control Policy explicitly denies `iam:CreateOpenIDConnectProvider` and `iam:ListOpenIDConnectProviders`, and restricts regional resource creation to `eu-north-1`.
 
 Because the account SCP blocks creating an IAM OIDC identity provider on the Free Plan:
-- The `iam` module includes the `aws_iam_openid_connect_provider` and OIDC trust policy behind `var.enable_github_oidc` (default `false` on Free Plan accounts, `true` on standard accounts) and documents the SCP denial in ADR 0007.
-- For live runs on this Free Plan account, GitHub Actions authenticates using a least-privilege IAM user (`gha-ci`) whose only permission is `sts:AssumeRole` onto the read-only `gha-plan` role (and `gha-deploy` on manual `workflow_dispatch`), configured as encrypted GitHub repository secrets `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_PLAN_ROLE_ARN`, and `AWS_DEPLOY_ROLE_ARN`.
+- GitHub Actions runs as a credential-free CI pipeline (`.github/workflows/ci.yml`) executing linting, prose checks, unit tests, Docker image builds, Trivy/Gitleaks/Checkov security scans, and `terraform fmt` / `terraform validate` (`-backend=false`) on every push and pull request.
+- Jenkins performs all AWS deployments. The OIDC constraint is recorded in ADR 0007 and listed under production improvements in `README.md`.
 
 ---
 

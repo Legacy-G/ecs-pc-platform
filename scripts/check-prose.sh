@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Enforce repository prose standards across all git-tracked text files.
 # Fails on banned marketing words, AI self-references, em/en dashes in prose,
-# emojis, and leftover placeholder markers.
+# emojis, leftover placeholder markers, 12-digit AWS account IDs, ARNs with
+# account IDs, and personal email addresses.
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -56,6 +57,12 @@ PLACEHOLDER_PATTERNS = [
     r"\bFIXME\b",
 ]
 
+SENSITIVE_PATTERNS = [
+    (r"arn:aws:[a-z0-9-]+:[a-z0-9-]*:\d{12}:", "AWS ARN containing 12-digit account ID"),
+    (r"(?<![0-9a-fA-F])\d{12}(?![0-9a-fA-F])", "12-digit numeric sequence (potential AWS account ID)"),
+    (r"[a-zA-Z0-9_.+-]+@gmail\.com\b", "personal email address in tracked file"),
+]
+
 EMOJI_RE = re.compile(
     "["
     "\U0001F300-\U0001FAFF"
@@ -69,6 +76,7 @@ DASH_RE = re.compile(r"[\u2013\u2014]")
 
 BANNED_RE = re.compile("|".join(BANNED_PATTERNS), re.IGNORECASE)
 PLACEHOLDER_RE = re.compile("|".join(PLACEHOLDER_PATTERNS))
+SENSITIVE_RES = [(re.compile(pat, re.IGNORECASE), desc) for pat, desc in SENSITIVE_PATTERNS]
 
 files_out = subprocess.check_output(["git", "ls-files"], text=True)
 files = [f.strip() for f in files_out.splitlines() if f.strip()]
@@ -108,6 +116,12 @@ for path in files:
         m_emoji = EMOJI_RE.search(line)
         if m_emoji:
             failures.append(f"{norm_path}:{lineno}: emoji character '{m_emoji.group(0)}'")
+
+        if norm_path != ".gitleaks.toml":
+            for s_re, s_desc in SENSITIVE_RES:
+                m_sens = s_re.search(line)
+                if m_sens:
+                    failures.append(f"{norm_path}:{lineno}: {s_desc} '{m_sens.group(0)}'")
 
         if is_markdown and not in_fence:
             stripped = re.sub(r"`[^`]*`", "", line)
