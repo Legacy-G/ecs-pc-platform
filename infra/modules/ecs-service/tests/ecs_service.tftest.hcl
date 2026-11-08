@@ -1,8 +1,13 @@
 mock_provider "aws" {
-  override_data {
-    target = data.aws_caller_identity.current
-    values = {
+  mock_data "aws_caller_identity" {
+    defaults = {
       account_id = "account-mock"
+    }
+  }
+
+  mock_data "aws_iam_policy_document" {
+    defaults = {
+      json = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"sts:GetCallerIdentity\"],\"Resource\":[\"*\"]}]}"
     }
   }
 }

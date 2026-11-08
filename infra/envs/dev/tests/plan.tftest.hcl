@@ -1,22 +1,19 @@
 mock_provider "aws" {
-  override_data {
-    target = data.aws_caller_identity.current
-    values = {
+  mock_data "aws_caller_identity" {
+    defaults = {
       account_id = "account-redacted"
     }
   }
 
-  override_data {
-    target = module.network.data.aws_availability_zones.available
-    values = {
+  mock_data "aws_availability_zones" {
+    defaults = {
       names = ["eu-north-1a", "eu-north-1b", "eu-north-1c"]
     }
   }
 
-  override_data {
-    target = module.ecs_service.data.aws_caller_identity.current
-    values = {
-      account_id = "account-redacted"
+  mock_data "aws_iam_policy_document" {
+    defaults = {
+      json = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"sts:GetCallerIdentity\"],\"Resource\":[\"*\"]}]}"
     }
   }
 }
