@@ -40,13 +40,14 @@ jobs:
 
       - name: Install Python linters and test dependencies
         run: |
+          python -m pip install --disable-pip-version-check --no-deps --require-hashes \
+            -r services/api/requirements.lock
           python -m pip install --disable-pip-version-check \
             "ruff==${RUFF_VERSION}" \
             "yamllint==${YAMLLINT_VERSION}" \
             "shellcheck-py==${SHELLCHECK_VERSION}" \
             "pytest==9.2.0" \
-            "pytest-cov==7.1.0" \
-            -r services/api/requirements.lock
+            "pytest-cov==7.1.0"
 
       - name: Run prose and sensitive-pattern check
         run: bash scripts/check-prose.sh
