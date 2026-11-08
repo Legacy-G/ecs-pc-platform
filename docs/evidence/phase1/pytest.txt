@@ -1,0 +1,33 @@
+$ pytest -v
+============================= test session starts =============================
+platform linux/win32 -- Python 3.13.7, pytest-9.2.0, pluggy-1.7.0
+rootdir: services/api
+configfile: pyproject.toml
+testpaths: tests
+collected 19 items
+
+tests/test_echo.py .....                                                 [ 26%]
+tests/test_health.py .....                                               [ 52%]
+tests/test_info.py ..                                                    [ 63%]
+tests/test_metadata.py ....                                              [ 84%]
+tests/test_status.py ...                                                 [100%]
+
+=============================== tests coverage ================================
+Name                     Stmts   Miss  Cover   Missing
+------------------------------------------------------
+app/__init__.py              0      0   100%
+app/config.py               24      0   100%
+app/logging.py              26      1    96%   29
+app/main.py                 34      0   100%
+app/metadata.py             32      0   100%
+app/middleware.py           35      5    86%   43-57
+app/routes/__init__.py       0      0   100%
+app/routes/echo.py          15      0   100%
+app/routes/health.py        14      0   100%
+app/routes/info.py          15      0   100%
+app/routes/status.py        31      0   100%
+app/schemas.py              34      0   100%
+------------------------------------------------------
+TOTAL                      260      6    98%
+Required test coverage of 90% reached. Total coverage: 97.69%
+============================= 19 passed in 3.66s ==============================

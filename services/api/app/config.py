@@ -2,7 +2,7 @@
 
 from functools import lru_cache
 
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -23,9 +23,17 @@ class Settings(BaseSettings):
     aws_region: str = Field(default="eu-north-1", min_length=1)
     log_level: str = Field(default="INFO", pattern=r"^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$")
     forwarded_allow_ips: str = Field(default="127.0.0.1", min_length=1)
-    api_key: SecretStr = Field(default=SecretStr("local-dev-only-replace-me"))
+    api_key: SecretStr = Field(default=SecretStr(""))
     ecs_container_metadata_uri_v4: str | None = Field(default=None)
     metadata_timeout_seconds: float = Field(default=0.5, gt=0.0, le=5.0)
+
+    @model_validator(mode="after")
+    def validate_non_local_api_key(self) -> "Settings":
+        """Refuse to start in non-local environments without a configured API key."""
+        raw_key = self.api_key.get_secret_value().strip()
+        if self.app_env.lower() != "local" and not raw_key:
+            raise ValueError("API_KEY must be configured when APP_ENV is not 'local'.")
+        return self
 
 
 @lru_cache(maxsize=1)

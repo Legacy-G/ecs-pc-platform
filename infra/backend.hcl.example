@@ -1,0 +1,4 @@
+bucket       = "damolak-tfstate-<ACCOUNT_ID>-eu-north-1"
+region       = "eu-north-1"
+encrypt      = true
+use_lockfile = true

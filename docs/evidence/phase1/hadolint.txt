@@ -1,0 +1,2 @@
+$ docker run --rm -i hadolint/hadolint:v2.15.1 < services/api/Dockerfile
+hadolint_exit=0

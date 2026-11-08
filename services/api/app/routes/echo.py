@@ -17,9 +17,11 @@ def verify_api_key(
     x_api_key: Annotated[str | None, Header(alias="X-API-Key")] = None,
 ) -> None:
     """Compare caller X-API-Key header in constant time against configured secret."""
-    expected = settings.api_key.get_secret_value()
-    if not x_api_key or not secrets.compare_digest(
-        x_api_key.encode("utf-8"), expected.encode("utf-8")
+    expected = settings.api_key.get_secret_value().strip()
+    if (
+        not expected
+        or not x_api_key
+        or not secrets.compare_digest(x_api_key.encode("utf-8"), expected.encode("utf-8"))
     ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

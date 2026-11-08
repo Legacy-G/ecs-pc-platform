@@ -137,17 +137,44 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
-      - name: Check Terraform formatting and validate root stacks
+      - name: Check Terraform formatting, validate stacks, and run module tests
         run: |
-          if [ -d infra ]; then
-            terraform fmt -check -recursive infra
-            for dir in infra/bootstrap infra/envs/shared infra/envs/dev infra/envs/prod; do
-              if [ -d "$dir" ]; then
-                echo "Validating $dir"
-                terraform -chdir="$dir" init -backend=false -input=false
-                terraform -chdir="$dir" validate
-              fi
-            done
-          else
-            echo "infra/ directory not yet populated; skipping until Phase 2."
-          fi
+          terraform fmt -check -recursive infra
+          for dir in infra/bootstrap infra/envs/shared infra/envs/dev infra/envs/prod; do
+            echo "Validating $dir"
+            terraform -chdir="$dir" init -backend=false -input=false
+            terraform -chdir="$dir" validate
+          done
+          for mod in infra/modules/network infra/modules/ecs-service; do
+            echo "Testing module $mod"
+            terraform -chdir="$mod" init -backend=false -input=false
+            terraform -chdir="$mod" test
+          done
+          for stack in infra/bootstrap infra/envs/shared infra/envs/dev; do
+            echo "Running read-only plan test for $stack"
+            terraform -chdir="$stack" test -verbose
+          done
+
+      - name: Run TFLint with AWS ruleset
+        run: |
+          docker run --rm \
+            -v "${GITHUB_WORKSPACE}:/data" \
+            -v "${RUNNER_TEMP}:/root/.tflint.d" \
+            "ghcr.io/terraform-linters/tflint:v${TFLINT_VERSION}" \
+            --init --config=/data/.tflint.hcl
+          for dir in infra/bootstrap infra/envs/shared infra/envs/dev infra/envs/prod; do
+            echo "TFLint $dir"
+            docker run --rm \
+              -v "${GITHUB_WORKSPACE}:/data" \
+              -v "${RUNNER_TEMP}:/root/.tflint.d" \
+              "ghcr.io/terraform-linters/tflint:v${TFLINT_VERSION}" \
+              --config=/data/.tflint.hcl --chdir="/data/${dir}"
+          done
+
+      - name: Run Trivy IaC configuration scan
+        run: |
+          docker run --rm -v "${GITHUB_WORKSPACE}:/work:ro" \
+            "aquasec/trivy:${TRIVY_VERSION}" config \
+            --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            /work/infra

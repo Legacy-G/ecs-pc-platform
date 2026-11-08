@@ -1,0 +1,2 @@
+$ docker compose exec -T api id
+uid=10001(appuser) gid=10001(appgroup) groups=10001(appgroup)
