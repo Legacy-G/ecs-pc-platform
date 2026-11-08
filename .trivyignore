@@ -1,0 +1,4 @@
+# Accepted CVE exceptions for Trivy scans.
+# Only unfixable upstream Debian base-image CVEs may be listed here, each with
+# an inline justification and review date. Fixable HIGH/CRITICAL vulnerabilities
+# must be remediated by upgrading the package or base image.

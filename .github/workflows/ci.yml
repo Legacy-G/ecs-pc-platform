@@ -1,0 +1,152 @@
+---
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+      - "feat/**"
+      - "fix/**"
+      - "chore/**"
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-test:
+    name: Lint, Prose Audit, and Unit Tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Load pinned tool versions
+        run: grep -v '^#' ci/versions.env | grep -v '^$' >> "$GITHUB_ENV"
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Python linters and test dependencies
+        run: |
+          python -m pip install --disable-pip-version-check \
+            "ruff==${RUFF_VERSION}" \
+            "yamllint==${YAMLLINT_VERSION}" \
+            "shellcheck-py==${SHELLCHECK_VERSION}" \
+            "pytest==9.2.0" \
+            "pytest-cov==7.1.0" \
+            -r services/api/requirements.lock
+
+      - name: Run prose and sensitive-pattern check
+        run: bash scripts/check-prose.sh
+
+      - name: Run yamllint
+        run: yamllint -c .yamllint.yml --strict .
+
+      - name: Run shellcheck
+        run: shellcheck --severity=warning scripts/*.sh
+
+      - name: Run ruff lint and format checks
+        working-directory: services/api
+        run: |
+          ruff check .
+          ruff format --check .
+
+      - name: Run pytest with coverage enforcement
+        working-directory: services/api
+        run: pytest
+
+  build-and-scan:
+    name: Build Container, Smoke Test, and Security Scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    needs: [lint-and-test]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Load pinned tool versions
+        run: grep -v '^#' ci/versions.env | grep -v '^$' >> "$GITHUB_ENV"
+
+      - name: Run Gitleaks on full git history
+        run: |
+          docker run --rm -v "${GITHUB_WORKSPACE}:/repo:ro" \
+            "zricethezav/gitleaks:v${GITLEAKS_VERSION}" \
+            detect --source=/repo --config=/repo/.gitleaks.toml --verbose --redact
+
+      - name: Run Hadolint on Dockerfile
+        run: |
+          docker run --rm -i "hadolint/hadolint:v${HADOLINT_VERSION}" \
+            < services/api/Dockerfile
+
+      - name: Build API container image
+        run: |
+          docker build \
+            --build-arg APP_VERSION=0.1.0 \
+            --build-arg "GIT_SHA=${GITHUB_SHA}" \
+            -t "damolak-api:${GITHUB_SHA}" \
+            services/api
+
+      - name: Run Trivy image and filesystem scan
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${GITHUB_WORKSPACE}:/work:ro" \
+            "aquasec/trivy:${TRIVY_VERSION}" image \
+            --ignorefile /work/.trivyignore \
+            --ignore-unfixed \
+            --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            "damolak-api:${GITHUB_SHA}"
+
+      - name: Verify container startup and smoke test
+        run: |
+          GIT_SHA="${GITHUB_SHA}" docker compose up -d
+          bash scripts/smoke.sh "http://127.0.0.1:8000" "${GITHUB_SHA}"
+          docker compose down --remove-orphans
+
+  terraform-validate:
+    name: Terraform Format and Validate (Offline)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs: [lint-and-test]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Load pinned tool versions
+        run: grep -v '^#' ci/versions.env | grep -v '^$' >> "$GITHUB_ENV"
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Check Terraform formatting and validate root stacks
+        run: |
+          if [ -d infra ]; then
+            terraform fmt -check -recursive infra
+            for dir in infra/bootstrap infra/envs/shared infra/envs/dev infra/envs/prod; do
+              if [ -d "$dir" ]; then
+                echo "Validating $dir"
+                terraform -chdir="$dir" init -backend=false -input=false
+                terraform -chdir="$dir" validate
+              fi
+            done
+          else
+            echo "infra/ directory not yet populated; skipping until Phase 2."
+          fi
