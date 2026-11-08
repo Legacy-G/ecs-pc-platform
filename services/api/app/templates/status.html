@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ service }} | Runtime Telemetry</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="container">
+    <header class="header">
+      <div>
+        <p class="eyebrow">ECS Fargate Platform Telemetry</p>
+        <h1>{{ service }}</h1>
+      </div>
+      <span class="badge badge-ok">HEALTHY</span>
+    </header>
+
+    <section class="grid" aria-label="Deployment telemetry">
+      <article class="card">
+        <h2>Application Version</h2>
+        <p class="value" id="app-version">{{ version }}</p>
+      </article>
+      <article class="card">
+        <h2>Deployed Git SHA</h2>
+        <p class="value mono" id="git-sha">{{ git_sha }}</p>
+      </article>
+      <article class="card">
+        <h2>Environment</h2>
+        <p class="value" id="environment">{{ environment }}</p>
+      </article>
+      <article class="card">
+        <h2>AWS Region</h2>
+        <p class="value mono" id="aws-region">{{ aws_region }}</p>
+      </article>
+      <article class="card">
+        <h2>ECS Task ID</h2>
+        <p class="value mono" id="task-id">{{ task_id }}</p>
+      </article>
+      <article class="card">
+        <h2>Availability Zone</h2>
+        <p class="value mono" id="availability-zone">{{ availability_zone }}</p>
+      </article>
+      <article class="card">
+        <h2>Process Uptime</h2>
+        <p class="value" id="uptime">{{ uptime_human }} ({{ uptime_seconds }}s)</p>
+      </article>
+      <article class="card">
+        <h2>Started At</h2>
+        <p class="value mono" id="started-at">{{ started_at }}</p>
+      </article>
+    </section>
+
+    <section class="endpoints">
+      <h2>Service Endpoints</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Path</th>
+            <th>Auth</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>GET</code></td>
+            <td><a href="/api/v1/health/">/api/v1/health/</a></td>
+            <td>None</td>
+            <td>ALB target group and container readiness probe</td>
+          </tr>
+          <tr>
+            <td><code>GET</code></td>
+            <td><a href="/api/v1/info/">/api/v1/info/</a></td>
+            <td>None</td>
+            <td>JSON runtime telemetry and deployed Git SHA</td>
+          </tr>
+          <tr>
+            <td><code>POST</code></td>
+            <td><code>/api/v1/echo/</code></td>
+            <td><code>X-API-Key</code></td>
+            <td>Authenticated payload echo backed by SSM Parameter Store</td>
+          </tr>
+          <tr>
+            <td><code>GET</code></td>
+            <td><a href="/docs">/docs</a></td>
+            <td>None</td>
+            <td>Interactive OpenAPI specification</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer class="footer">
+      <span>Request ID: <code id="request-id">{{ request_id }}</code></span>
+      <span>Stateless runtime (no database or cache dependencies)</span>
+    </footer>
+  </main>
+</body>
+</html>
