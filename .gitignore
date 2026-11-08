@@ -1,0 +1,52 @@
+# The challenge brief is shared privately and is not redistributed.
+docs/challenge/
+*.docx
+
+# Terraform state, plans and local config. State lives in S3; backend.hcl
+# and *.tfvars hold the bucket name and alert email.
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+crash.*.log
+backend.hcl
+*.tfvars
+!*.tfvars.example
+.terraform.tfstate.lock.info
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+jenkins-ci-access-key*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+reports/
+*.egg-info/
+
+# Jenkins runtime data
+ci/jenkins/home/
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

@@ -1,0 +1,6 @@
+# Scripts and configs run inside Linux containers and WSL; CRLF breaks them.
+* text=auto eol=lf
+
+*.png binary
+*.svg text eol=lf
+*.docx binary

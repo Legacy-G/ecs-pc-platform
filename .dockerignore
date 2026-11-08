@@ -1,0 +1,18 @@
+# Applies to any build that uses the repo root as context. Service images
+# build from their own directory and carry a narrower .dockerignore there.
+.git
+.github
+.terraform
+**/.terraform
+*.tfstate*
+*.tfvars
+backend.hcl
+.env
+.env.*
+docs
+infra
+ci/jenkins/home
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/.venv

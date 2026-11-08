@@ -1,0 +1,21 @@
+title = "ecs-pc-platform gitleaks config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "aws-account-id-in-config"
+description = "12-digit AWS account ID in tracked files"
+regex = '''(?i)(?:account[_-]?id|arn:aws:[a-z0-9-]+:[a-z0-9-]*:)["'\s:=]*([0-9]{12})'''
+tags = ["aws", "account-id"]
+
+[allowlist]
+description = "Allow documentation placeholders and lockfiles"
+paths = [
+  '''^\.gitleaks\.toml$''',
+]
+regexes = [
+  '''000000000000''',
+  '''111122223333''',
+  '''123456789012''',
+]
