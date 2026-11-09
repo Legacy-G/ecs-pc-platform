@@ -14,7 +14,7 @@ output "public_subnet_ids" {
 }
 
 output "private_subnet_ids" {
-  description = "List of private subnet IDs across two Availability Zones."
+  description = "Private subnet IDs across two Availability Zones. Empty unless enable_private_subnets or enable_nat_gateway is true."
   value       = aws_subnet.private[*].id
 }
 

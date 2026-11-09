@@ -86,13 +86,13 @@ resource "aws_cloudwatch_metric_alarm" "unhealthy_hosts" {
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "running_task_count" {
-  alarm_name          = "${local.name_prefix}-running-tasks-low"
-  alarm_description   = "ECS service running task count dropped below 1"
+resource "aws_cloudwatch_metric_alarm" "healthy_hosts_low" {
+  alarm_name          = "${local.name_prefix}-healthy-hosts-low"
+  alarm_description   = "ALB target group healthy host count dropped below 1 (replaces ECS ContainerInsights RunningTaskCount to avoid extra CloudWatch costs)"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = 1
-  metric_name         = "RunningTaskCount"
-  namespace           = "ECS/ContainerInsights"
+  metric_name         = "HealthyHostCount"
+  namespace           = "AWS/ApplicationELB"
   period              = 60
   statistic           = "Minimum"
   threshold           = 1
@@ -101,8 +101,8 @@ resource "aws_cloudwatch_metric_alarm" "running_task_count" {
   ok_actions          = [aws_sns_topic.alerts.arn]
 
   dimensions = {
-    ClusterName = var.cluster_name
-    ServiceName = var.service_name
+    LoadBalancer = var.alb_arn_suffix
+    TargetGroup  = var.target_group_arn_suffix
   }
 }
 
@@ -187,14 +187,14 @@ resource "aws_cloudwatch_dashboard" "this" {
         width  = 12
         height = 6
         properties = {
-          title  = "ECS CPU, Memory, and Running Tasks"
+          title  = "ECS CPU, Memory, and ALB Healthy Hosts"
           region = var.aws_region
           stat   = "Average"
           period = 60
           metrics = [
             ["AWS/ECS", "CPUUtilization", "ClusterName", var.cluster_name, "ServiceName", var.service_name],
             ["AWS/ECS", "MemoryUtilization", "ClusterName", var.cluster_name, "ServiceName", var.service_name],
-            ["ECS/ContainerInsights", "RunningTaskCount", "ClusterName", var.cluster_name, "ServiceName", var.service_name, { stat = "Minimum" }]
+            ["AWS/ApplicationELB", "HealthyHostCount", "LoadBalancer", var.alb_arn_suffix, "TargetGroup", var.target_group_arn_suffix, { stat = "Minimum" }]
           ]
         }
       },

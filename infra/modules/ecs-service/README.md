@@ -1,6 +1,8 @@
 # `ecs-service` Terraform Module
 
-Provisions an Application Load Balancer (`drop_invalid_header_fields = true`), target group (`/api/v1/health/`), security groups (ALB TCP/80 ingress -> task TCP/8000; task egress restricted to TCP/443), ECS cluster with Container Insights, least-privilege execution/task IAM roles, Fargate task definition, ECS service with deployment circuit breaker + rollback and `wait_for_steady_state = true`, and CPU TargetTracking Application Auto Scaling (`min = 1`, `max = 2`).
+Provisions an Amazon ECS Fargate service behind a shared Application Load Balancer listener rule, target group (`/api/v1/health/`), security groups (ALB to task egress rule and task ingress rule; task egress restricted to TCP 443), least-privilege execution/task IAM roles, Fargate task definition (`readonlyRootFilesystem = true`), and CPU TargetTracking Application Auto Scaling (`min = 1`, `max = 2`).
+
+A second service can be deployed to the same ALB by instantiating this module with a unique `service_name`, `listener_rule_priority`, and `path_patterns`.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -20,16 +22,12 @@ Provisions an Application Load Balancer (`drop_invalid_header_fields = true`), t
 
 | Name | Type |
 |------|------|
-| `aws_security_group.alb` | resource |
-| `aws_vpc_security_group_ingress_rule.alb_http_in` | resource |
-| `aws_vpc_security_group_egress_rule.alb_to_task` | resource |
 | `aws_security_group.task` | resource |
 | `aws_vpc_security_group_ingress_rule.task_from_alb` | resource |
+| `aws_vpc_security_group_egress_rule.alb_to_task` | resource |
 | `aws_vpc_security_group_egress_rule.task_https_out` | resource |
-| `aws_lb.this` | resource |
 | `aws_lb_target_group.this` | resource |
-| `aws_lb_listener.http` | resource |
-| `aws_ecs_cluster.this` | resource |
+| `aws_lb_listener_rule.this` | resource |
 | `aws_iam_role.execution` | resource |
 | `aws_iam_role_policy_attachment.execution_managed` | resource |
 | `aws_iam_role_policy.execution_ssm` | resource |
@@ -48,12 +46,17 @@ Provisions an Application Load Balancer (`drop_invalid_header_fields = true`), t
 |------|-------------|------|---------|:--------:|
 | `project_name` | Short lowercase project identifier used as a resource prefix. | `string` | n/a | yes |
 | `environment` | Deployment environment name (dev or prod). | `string` | n/a | yes |
-| `aws_region` | AWS region where the ECS service and ALB are deployed. | `string` | `"eu-north-1"` | no |
-| `vpc_id` | ID of the VPC hosting the ALB and ECS service. | `string` | n/a | yes |
+| `service_name` | Short name of this service (for example api). Used in resource names and as the container name. | `string` | `"api"` | no |
+| `aws_region` | AWS region where the ECS service is deployed. | `string` | `"eu-north-1"` | no |
+| `vpc_id` | ID of the VPC hosting the ECS service. | `string` | n/a | yes |
 | `vpc_cidr` | IPv4 CIDR block of the VPC, passed to uvicorn --forwarded-allow-ips. | `string` | n/a | yes |
-| `public_subnet_ids` | List of public subnet IDs across at least two Availability Zones for the ALB. | `list(string)` | n/a | yes |
 | `service_subnet_ids` | List of subnet IDs across at least two Availability Zones for ECS Fargate tasks. | `list(string)` | n/a | yes |
 | `assign_public_ip` | Whether to assign a public IPv4 address to task ENIs (true in NAT-less dev, false in private prod subnets). | `bool` | `true` | no |
+| `cluster_name` | Name of the ECS cluster that runs the service (from the ecs-cluster module). | `string` | n/a | yes |
+| `listener_arn` | ARN of the ALB listener that receives this service's listener rule (from the alb module). | `string` | n/a | yes |
+| `alb_security_group_id` | Security group ID of the ALB (from the alb module). The service adds its own egress rule to it. | `string` | n/a | yes |
+| `listener_rule_priority` | Priority of the listener rule. Each service on the same listener needs a unique value. | `number` | n/a | yes |
+| `path_patterns` | Request path patterns routed to this service, for example ["/*"] or ["/orders/*"]. | `list(string)` | n/a | yes |
 | `container_image` | Full container image URI (immutable tag or digest) to deploy. | `string` | n/a | yes |
 | `app_version` | Semantic version string exposed by the application telemetry endpoints. | `string` | `"0.1.0"` | no |
 | `git_sha` | Git commit SHA exposed by the application telemetry endpoints. | `string` | `"initial"` | no |
@@ -67,27 +70,18 @@ Provisions an Application Load Balancer (`drop_invalid_header_fields = true`), t
 | `health_check_path` | HTTP path probed by the ALB target group and container health check. | `string` | `"/api/v1/health/"` | no |
 | `log_group_name` | Name of the CloudWatch Logs group receiving container stdout/stderr. | `string` | n/a | yes |
 | `ssm_api_key_parameter_name` | SSM Parameter Store path holding the SecureString X-API-Key secret. | `string` | n/a | yes |
-| `enable_deletion_protection` | Whether to enable deletion protection on the Application Load Balancer. | `bool` | `false` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| `cluster_id` | ARN/ID of the ECS cluster. |
-| `cluster_name` | Name of the ECS cluster. |
-| `cluster_arn` | ARN of the ECS cluster. |
 | `service_id` | ID of the ECS service. |
 | `service_name` | Name of the ECS service. |
 | `task_definition_arn` | Full ARN of the registered ECS task definition revision. |
 | `task_execution_role_arn` | ARN of the ECS task execution IAM role. |
 | `task_role_arn` | ARN of the ECS task runtime IAM role. |
-| `alb_arn` | ARN of the Application Load Balancer. |
-| `alb_arn_suffix` | ARN suffix of the ALB for CloudWatch metric dimensions. |
-| `alb_dns_name` | Public DNS name of the Application Load Balancer. |
-| `alb_zone_id` | Canonical hosted zone ID of the Application Load Balancer. |
-| `alb_security_group_id` | Security group ID attached to the Application Load Balancer. |
 | `target_group_arn` | ARN of the ALB target group. |
 | `target_group_arn_suffix` | ARN suffix of the ALB target group for CloudWatch metric dimensions. |
 | `task_security_group_id` | Security group ID attached to ECS Fargate tasks. |
-| `service_url` | Base HTTP URL for reaching the service via the Application Load Balancer. |
+| `ssm_api_key_parameter_arn` | Constructed ARN of the SSM parameter the execution role may read. |
 <!-- END_TF_DOCS -->

@@ -1,2 +1,4 @@
-$ docker run --rm -i hadolint/hadolint:v2.15.1 < services/api/Dockerfile
-hadolint_exit=0
+# Evidence: hadolint Dockerfile static analysis
+# Commit: 9f2d576048bd548fb2bebc1a2d750a1ce86aa0a9
+# Timestamp (UTC): 2026-11-09T21:26:31Z
+

@@ -2,47 +2,18 @@ data "aws_caller_identity" "current" {}
 
 locals {
   name_prefix = "${var.project_name}-${var.environment}"
+  svc_prefix  = "${var.project_name}-${var.environment}-${var.service_name}"
   # Construct the SSM parameter ARN without reading the secret value into Terraform state.
   ssm_api_key_parameter_arn = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/${trimprefix(var.ssm_api_key_parameter_name, "/")}"
 }
 
-# trivy:ignore:AVD-AWS-0107 Public internet-facing ALB intentionally accepts HTTP TCP/80 from 0.0.0.0/0.
-resource "aws_security_group" "alb" {
-  name        = "${local.name_prefix}-alb-sg"
-  description = "Allow public HTTP ingress to ALB and forward only to ECS task port"
-  vpc_id      = var.vpc_id
-
-  tags = {
-    Name = "${local.name_prefix}-alb-sg"
-  }
-}
-
-# trivy:ignore:AVD-AWS-0107 Public ALB must accept HTTP ingress from any client IPv4 address.
-resource "aws_vpc_security_group_ingress_rule" "alb_http_in" {
-  security_group_id = aws_security_group.alb.id
-  description       = "Allow public HTTP traffic from the internet"
-  from_port         = 80
-  to_port           = 80
-  ip_protocol       = "tcp"
-  cidr_ipv4         = "0.0.0.0/0"
-}
-
-resource "aws_vpc_security_group_egress_rule" "alb_to_task" {
-  security_group_id            = aws_security_group.alb.id
-  description                  = "Forward HTTP requests only to ECS task security group on container port"
-  from_port                    = var.container_port
-  to_port                      = var.container_port
-  ip_protocol                  = "tcp"
-  referenced_security_group_id = aws_security_group.task.id
-}
-
 resource "aws_security_group" "task" {
-  name        = "${local.name_prefix}-task-sg"
-  description = "Allow HTTP from ALB only and outbound HTTPS TCP/443 for AWS APIs and ECR"
+  name        = "${local.svc_prefix}-task-sg"
+  description = "Allow HTTP from the ALB only and outbound HTTPS TCP/443 for AWS APIs and ECR"
   vpc_id      = var.vpc_id
 
   tags = {
-    Name = "${local.name_prefix}-task-sg"
+    Name = "${local.svc_prefix}-task-sg"
   }
 }
 
@@ -52,7 +23,17 @@ resource "aws_vpc_security_group_ingress_rule" "task_from_alb" {
   from_port                    = var.container_port
   to_port                      = var.container_port
   ip_protocol                  = "tcp"
-  referenced_security_group_id = aws_security_group.alb.id
+  referenced_security_group_id = var.alb_security_group_id
+}
+
+# Each service opens its own port on the shared ALB security group, so adding a service needs no change in the alb module.
+resource "aws_vpc_security_group_egress_rule" "alb_to_task" {
+  security_group_id            = var.alb_security_group_id
+  description                  = "Forward HTTP requests to the ${var.service_name} task security group"
+  from_port                    = var.container_port
+  to_port                      = var.container_port
+  ip_protocol                  = "tcp"
+  referenced_security_group_id = aws_security_group.task.id
 }
 
 # trivy:ignore:AVD-AWS-0104 Outbound TCP 443 to 0.0.0.0/0 is required to reach ECR, S3 layer storage, CloudWatch Logs, and SSM without paid VPC interface endpoints.
@@ -65,27 +46,8 @@ resource "aws_vpc_security_group_egress_rule" "task_https_out" {
   cidr_ipv4         = "0.0.0.0/0"
 }
 
-# trivy:ignore:AVD-AWS-0053 ALB is intentionally internet-facing to serve the public assessment URL.
-resource "aws_lb" "this" {
-  # checkov:skip=CKV_AWS_150:Deletion protection is disabled in dev so make down / make nuke can tear down cleanly.
-  # checkov:skip=CKV_AWS_91:ALB access logging to S3 is omitted to avoid additional S3 request/storage charges in dev.
-  # checkov:skip=CKV2_AWS_28:WAFv2 is omitted to stay within the USD 40 Free Plan credit budget.
-  # checkov:skip=CKV2_AWS_20:HTTP-to-HTTPS redirect is omitted because no custom Route 53 domain or ACM certificate is provisioned.
-  name                       = "${local.name_prefix}-alb"
-  internal                   = false
-  load_balancer_type         = "application"
-  security_groups            = [aws_security_group.alb.id]
-  subnets                    = var.public_subnet_ids
-  drop_invalid_header_fields = true
-  enable_deletion_protection = var.enable_deletion_protection
-
-  tags = {
-    Name = "${local.name_prefix}-alb"
-  }
-}
-
 resource "aws_lb_target_group" "this" {
-  name                 = "${local.name_prefix}-tg"
+  name                 = "${local.svc_prefix}-tg"
   port                 = var.container_port
   protocol             = "HTTP"
   target_type          = "ip"
@@ -105,34 +67,27 @@ resource "aws_lb_target_group" "this" {
   }
 
   tags = {
-    Name = "${local.name_prefix}-tg"
+    Name = "${local.svc_prefix}-tg"
   }
 }
 
-# trivy:ignore:AVD-AWS-0054 HTTP listener is used because no custom DNS domain or ACM TLS certificate is available in the challenge account.
-resource "aws_lb_listener" "http" {
-  # checkov:skip=CKV_AWS_2:HTTP listener is used intentionally because no Route 53 domain is available for ACM validation.
-  # checkov:skip=CKV_AWS_103:TLS cipher policy applies only to HTTPS listeners.
-  load_balancer_arn = aws_lb.this.arn
-  port              = 80
-  protocol          = "HTTP"
+resource "aws_lb_listener_rule" "this" {
+  listener_arn = var.listener_arn
+  priority     = var.listener_rule_priority
 
-  default_action {
+  action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.this.arn
   }
-}
 
-resource "aws_ecs_cluster" "this" {
-  name = "${local.name_prefix}-cluster"
-
-  setting {
-    name  = "containerInsights"
-    value = "enabled"
+  condition {
+    path_pattern {
+      values = var.path_patterns
+    }
   }
 
   tags = {
-    Name = "${local.name_prefix}-cluster"
+    Name = "${local.svc_prefix}-rule"
   }
 }
 
@@ -149,11 +104,11 @@ data "aws_iam_policy_document" "ecs_task_assume_role" {
 }
 
 resource "aws_iam_role" "execution" {
-  name               = "${local.name_prefix}-task-exec-role"
+  name               = "${local.svc_prefix}-task-exec-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
 
   tags = {
-    Name = "${local.name_prefix}-task-exec-role"
+    Name = "${local.svc_prefix}-task-exec-role"
   }
 }
 
@@ -172,23 +127,23 @@ data "aws_iam_policy_document" "execution_ssm" {
 }
 
 resource "aws_iam_role_policy" "execution_ssm" {
-  name   = "${local.name_prefix}-exec-ssm-policy"
+  name   = "${local.svc_prefix}-exec-ssm-policy"
   role   = aws_iam_role.execution.id
   policy = data.aws_iam_policy_document.execution_ssm.json
 }
 
 resource "aws_iam_role" "task" {
-  name               = "${local.name_prefix}-task-role"
+  name               = "${local.svc_prefix}-task-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
 
   tags = {
-    Name = "${local.name_prefix}-task-role"
+    Name = "${local.svc_prefix}-task-role"
   }
 }
 
 resource "aws_ecs_task_definition" "this" {
   # checkov:skip=CKV_AWS_336:Read-only root filesystem is enabled on the container with a writable /tmp volume.
-  family                   = "${local.name_prefix}-api"
+  family                   = local.svc_prefix
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   cpu                      = tostring(var.cpu)
@@ -207,7 +162,7 @@ resource "aws_ecs_task_definition" "this" {
 
   container_definitions = jsonencode([
     {
-      name                   = "api"
+      name                   = var.service_name
       image                  = var.container_image
       essential              = true
       readonlyRootFilesystem = true
@@ -229,7 +184,7 @@ resource "aws_ecs_task_definition" "this" {
       environment = [
         {
           name  = "APP_NAME"
-          value = "${var.project_name}-api"
+          value = "${var.project_name}-${var.service_name}"
         },
         {
           name  = "APP_ENV"
@@ -284,13 +239,13 @@ resource "aws_ecs_task_definition" "this" {
   ])
 
   tags = {
-    Name = "${local.name_prefix}-api"
+    Name = local.svc_prefix
   }
 }
 
 resource "aws_ecs_service" "this" {
-  name                               = "${local.name_prefix}-api"
-  cluster                            = aws_ecs_cluster.this.id
+  name                               = local.svc_prefix
+  cluster                            = var.cluster_name
   task_definition                    = aws_ecs_task_definition.this.arn
   desired_count                      = var.desired_count
   launch_type                        = "FARGATE"
@@ -313,27 +268,27 @@ resource "aws_ecs_service" "this" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.this.arn
-    container_name   = "api"
+    container_name   = var.service_name
     container_port   = var.container_port
   }
 
-  depends_on = [aws_lb_listener.http]
+  depends_on = [aws_lb_listener_rule.this]
 
   tags = {
-    Name = "${local.name_prefix}-api"
+    Name = local.svc_prefix
   }
 }
 
 resource "aws_appautoscaling_target" "ecs" {
   max_capacity       = var.max_capacity
   min_capacity       = var.min_capacity
-  resource_id        = "service/${aws_ecs_cluster.this.name}/${aws_ecs_service.this.name}"
+  resource_id        = "service/${var.cluster_name}/${aws_ecs_service.this.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 }
 
 resource "aws_appautoscaling_policy" "cpu" {
-  name               = "${local.name_prefix}-cpu-autoscaling"
+  name               = "${local.svc_prefix}-cpu-autoscaling"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.ecs.resource_id
   scalable_dimension = aws_appautoscaling_target.ecs.scalable_dimension

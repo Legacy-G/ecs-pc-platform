@@ -15,12 +15,17 @@ mock_provider "aws" {
 variables {
   project_name               = "damolak"
   environment                = "dev"
+  service_name               = "api"
   aws_region                 = "eu-north-1"
   vpc_id                     = "vpc-mock1234"
   vpc_cidr                   = "10.20.0.0/16"
-  public_subnet_ids          = ["subnet-pub1", "subnet-pub2"]
   service_subnet_ids         = ["subnet-pub1", "subnet-pub2"]
   assign_public_ip           = true
+  cluster_name               = "damolak-dev-cluster"
+  listener_arn               = "arn:aws:elasticloadbalancing:eu-north-1:aws-managed:listener/app/mock/1/2"
+  alb_security_group_id      = "sg-alb0123"
+  listener_rule_priority     = 100
+  path_patterns              = ["/*"]
   container_image            = "public.ecr.aws/docker/library/python:3.13-slim-bookworm"
   app_version                = "0.1.0"
   git_sha                    = "deadbeef"
@@ -34,25 +39,19 @@ variables {
   health_check_path          = "/api/v1/health/"
   log_group_name             = "/ecs/damolak-dev"
   ssm_api_key_parameter_name = "/damolak/dev/api-key"
-  enable_deletion_protection = false
 }
 
 run "valid_fargate_service_plan" {
   command = plan
 
   assert {
-    condition     = aws_lb.this.drop_invalid_header_fields == true
-    error_message = "ALB must drop invalid HTTP header fields."
-  }
-
-  assert {
-    condition     = aws_lb.this.enable_deletion_protection == false
-    error_message = "ALB deletion protection must be disabled in dev."
-  }
-
-  assert {
     condition     = aws_lb_target_group.this.health_check[0].path == "/api/v1/health/"
     error_message = "Target group health check path must be /api/v1/health/."
+  }
+
+  assert {
+    condition     = aws_lb_listener_rule.this.priority == 100
+    error_message = "Listener rule must use the priority passed in."
   }
 
   assert {
@@ -73,6 +72,31 @@ run "valid_fargate_service_plan" {
   assert {
     condition     = aws_appautoscaling_target.ecs.min_capacity == 1 && aws_appautoscaling_target.ecs.max_capacity == 2
     error_message = "Autoscaling target must enforce min_capacity=1 and max_capacity=2."
+  }
+
+  assert {
+    condition     = aws_ecs_service.this.name == "damolak-dev-api"
+    error_message = "Service name must be <project>-<environment>-<service_name>."
+  }
+}
+
+run "second_service_gets_distinct_names" {
+  command = plan
+
+  variables {
+    service_name           = "worker"
+    listener_rule_priority = 200
+    path_patterns          = ["/worker/*"]
+  }
+
+  assert {
+    condition     = aws_ecs_service.this.name == "damolak-dev-worker" && aws_lb_target_group.this.name == "damolak-dev-worker-tg"
+    error_message = "A second service must get its own service and target group names."
+  }
+
+  assert {
+    condition     = aws_iam_role.execution.name == "damolak-dev-worker-task-exec-role"
+    error_message = "A second service must get its own IAM roles."
   }
 }
 
@@ -97,5 +121,17 @@ run "reject_relative_ssm_parameter_path" {
 
   expect_failures = [
     var.ssm_api_key_parameter_name,
+  ]
+}
+
+run "reject_path_pattern_without_slash" {
+  command = plan
+
+  variables {
+    path_patterns = ["orders/*"]
+  }
+
+  expect_failures = [
+    var.path_patterns,
   ]
 }

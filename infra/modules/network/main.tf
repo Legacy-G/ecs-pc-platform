@@ -3,8 +3,9 @@ data "aws_availability_zones" "available" {
 }
 
 locals {
-  name_prefix = "${var.project_name}-${var.environment}"
-  azs         = slice(data.aws_availability_zones.available.names, 0, 2)
+  name_prefix            = "${var.project_name}-${var.environment}"
+  azs                    = slice(data.aws_availability_zones.available.names, 0, 2)
+  create_private_subnets = var.enable_private_subnets || var.enable_nat_gateway
 }
 
 # trivy:ignore:AVD-AWS-0178 VPC Flow Logs are omitted in dev to avoid additional CloudWatch Logs ingestion charges on the USD 40 credit budget.
@@ -49,7 +50,7 @@ resource "aws_subnet" "public" {
 }
 
 resource "aws_subnet" "private" {
-  count                   = 2
+  count                   = local.create_private_subnets ? 2 : 0
   vpc_id                  = aws_vpc.this.id
   cidr_block              = var.private_subnet_cidrs[count.index]
   availability_zone       = local.azs[count.index]
@@ -102,6 +103,7 @@ resource "aws_nat_gateway" "this" {
 }
 
 resource "aws_route_table" "private" {
+  count  = local.create_private_subnets ? 1 : 0
   vpc_id = aws_vpc.this.id
 
   dynamic "route" {
@@ -118,7 +120,7 @@ resource "aws_route_table" "private" {
 }
 
 resource "aws_route_table_association" "private" {
-  count          = 2
+  count          = local.create_private_subnets ? 2 : 0
   subnet_id      = aws_subnet.private[count.index].id
-  route_table_id = aws_route_table.private.id
+  route_table_id = aws_route_table.private[0].id
 }

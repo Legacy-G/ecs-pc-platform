@@ -7,11 +7,11 @@ AWS_PROFILE ?= damolak
 AWS_REGION  ?= eu-north-1
 TF_ENV      ?= dev
 
-.PHONY: help up local-down bootstrap down nuke test lint scan prose cost-check \
+.PHONY: help up local-down bootstrap down nuke test lint scan prose cost-check evidence \
         tf-fmt tf-validate tf-test tf-lint tf-docs plan apply destroy smoke diagrams
 
 help:
-	@echo "Targets: up local-down bootstrap down nuke test lint scan prose cost-check tf-fmt tf-validate tf-test tf-lint tf-docs plan apply destroy smoke diagrams"
+	@echo "Targets: up local-down bootstrap down nuke test lint scan prose cost-check evidence tf-fmt tf-validate tf-test tf-lint tf-docs plan apply destroy smoke diagrams"
 
 up:
 	docker compose up --build -d
@@ -44,6 +44,9 @@ prose:
 
 cost-check:
 	AWS_PROFILE=$(AWS_PROFILE) AWS_REGION=$(AWS_REGION) bash scripts/cost-check.sh
+
+evidence:
+	bash scripts/generate-evidence.sh
 
 tf-fmt:
 	terraform fmt -check -recursive infra
@@ -81,7 +84,7 @@ plan:
 	AWS_PROFILE=$(AWS_PROFILE) terraform -chdir=infra/envs/$(TF_ENV) plan -input=false
 
 apply:
-	@echo "Refusing unattended apply. Print hourly/daily cost estimate and obtain explicit chat approval first."
+	@echo "Refusing unattended apply. Print hourly/daily cost estimate (USD 0.0574/hr, USD 1.38/day) and obtain explicit chat approval first."
 	@exit 1
 
 destroy:

@@ -1,33 +1,38 @@
-$ pytest -v
+# Evidence: pytest unit tests and coverage enforcement
+# Commit: 9f2d576048bd548fb2bebc1a2d750a1ce86aa0a9
+# Timestamp (UTC): 2026-11-09T21:26:31Z
+
 ============================= test session starts =============================
-platform linux/win32 -- Python 3.13.7, pytest-9.2.0, pluggy-1.7.0
-rootdir: services/api
+platform win32 -- Python 3.13.7, pytest-9.2.0, pluggy-1.7.0
+rootdir: C:\Users\User\Projects\damolak_pc\services\api
 configfile: pyproject.toml
-testpaths: tests
+plugins: anyio-4.12.0, Faker-37.11.0, cov-7.1.0
 collected 19 items
 
-tests/test_echo.py .....                                                 [ 26%]
-tests/test_health.py .....                                               [ 52%]
-tests/test_info.py ..                                                    [ 63%]
-tests/test_metadata.py ....                                              [ 84%]
-tests/test_status.py ...                                                 [100%]
+services\api\tests\test_echo.py .....                                    [ 26%]
+services\api\tests\test_health.py .....                                  [ 52%]
+services\api\tests\test_info.py ..                                       [ 63%]
+services\api\tests\test_metadata.py ....                                 [ 84%]
+services\api\tests\test_status.py ...                                    [100%]
 
 =============================== tests coverage ================================
-Name                     Stmts   Miss  Cover   Missing
-------------------------------------------------------
-app/__init__.py              0      0   100%
-app/config.py               24      0   100%
-app/logging.py              26      1    96%   29
-app/main.py                 34      0   100%
-app/metadata.py             32      0   100%
-app/middleware.py           35      5    86%   43-57
-app/routes/__init__.py       0      0   100%
-app/routes/echo.py          15      0   100%
-app/routes/health.py        14      0   100%
-app/routes/info.py          15      0   100%
-app/routes/status.py        31      0   100%
-app/schemas.py              34      0   100%
-------------------------------------------------------
-TOTAL                      260      6    98%
+_______________ coverage: platform win32, python 3.13.7-final-0 _______________
+
+Name                                  Stmts   Miss  Cover   Missing
+-------------------------------------------------------------------
+services\api\app\__init__.py              0      0   100%
+services\api\app\config.py               24      0   100%
+services\api\app\logging.py              26      1    96%   29
+services\api\app\main.py                 34      0   100%
+services\api\app\metadata.py             32      0   100%
+services\api\app\middleware.py           35      5    86%   43-57
+services\api\app\routes\__init__.py       0      0   100%
+services\api\app\routes\echo.py          15      0   100%
+services\api\app\routes\health.py        14      0   100%
+services\api\app\routes\info.py          15      0   100%
+services\api\app\routes\status.py        31      0   100%
+services\api\app\schemas.py              34      0   100%
+-------------------------------------------------------------------
+TOTAL                                   260      6    98%
 Required test coverage of 90% reached. Total coverage: 97.69%
-============================= 19 passed in 3.66s ==============================
+============================= 19 passed in 1.50s ==============================

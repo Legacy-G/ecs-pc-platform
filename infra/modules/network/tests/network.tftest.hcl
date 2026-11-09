@@ -28,8 +28,13 @@ run "dev_natless_network" {
   }
 
   assert {
-    condition     = length(aws_subnet.public) == 2 && length(aws_subnet.private) == 2
-    error_message = "Expected two public and two private subnets across two AZs."
+    condition     = length(aws_subnet.public) == 2 && length(aws_subnet.private) == 0
+    error_message = "Dev network must create two public subnets and no private subnets."
+  }
+
+  assert {
+    condition     = length(aws_route_table.private) == 0
+    error_message = "Dev network must not create a private route table."
   }
 
   assert {
@@ -56,6 +61,27 @@ run "prod_nat_network" {
   assert {
     condition     = length(aws_nat_gateway.this) == 1
     error_message = "Prod network must create a NAT Gateway when enable_nat_gateway is true."
+  }
+
+  assert {
+    condition     = length(aws_subnet.private) == 2 && length(aws_route_table.private) == 1
+    error_message = "Enabling the NAT Gateway must also create the private subnets and route table."
+  }
+}
+
+run "private_subnets_without_nat" {
+  command = plan
+
+  variables {
+    project_name           = "damolak"
+    environment            = "dev"
+    enable_private_subnets = true
+    enable_nat_gateway     = false
+  }
+
+  assert {
+    condition     = length(aws_subnet.private) == 2 && length(aws_nat_gateway.this) == 0
+    error_message = "enable_private_subnets must create private subnets without a NAT Gateway."
   }
 }
 

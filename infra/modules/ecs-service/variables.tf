@@ -19,7 +19,7 @@ variable "environment" {
 }
 
 variable "aws_region" {
-  description = "AWS region where the ECS service and ALB are deployed."
+  description = "AWS region where the ECS service is deployed."
   type        = string
   default     = "eu-north-1"
 
@@ -30,7 +30,7 @@ variable "aws_region" {
 }
 
 variable "vpc_id" {
-  description = "ID of the VPC hosting the ALB and ECS service."
+  description = "ID of the VPC hosting the ECS service."
   type        = string
 
   validation {
@@ -49,13 +49,64 @@ variable "vpc_cidr" {
   }
 }
 
-variable "public_subnet_ids" {
-  description = "List of public subnet IDs across at least two Availability Zones for the ALB."
+variable "service_name" {
+  description = "Short name of this service (for example api). Used in resource names and as the container name."
+  type        = string
+  default     = "api"
+
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9-]{0,15}$", var.service_name))
+    error_message = "service_name must start with a letter and contain at most 16 lowercase alphanumeric characters or hyphens."
+  }
+}
+
+variable "cluster_name" {
+  description = "Name of the ECS cluster that runs the service (from the ecs-cluster module)."
+  type        = string
+
+  validation {
+    condition     = length(trimspace(var.cluster_name)) > 0
+    error_message = "cluster_name must not be empty."
+  }
+}
+
+variable "listener_arn" {
+  description = "ARN of the ALB listener that receives this service's listener rule (from the alb module)."
+  type        = string
+
+  validation {
+    condition     = startswith(var.listener_arn, "arn:")
+    error_message = "listener_arn must be an ARN."
+  }
+}
+
+variable "alb_security_group_id" {
+  description = "Security group ID of the ALB (from the alb module). The service adds its own egress rule to it."
+  type        = string
+
+  validation {
+    condition     = startswith(var.alb_security_group_id, "sg-")
+    error_message = "alb_security_group_id must start with sg-."
+  }
+}
+
+variable "listener_rule_priority" {
+  description = "Priority of the listener rule. Each service on the same listener needs a unique value."
+  type        = number
+
+  validation {
+    condition     = var.listener_rule_priority >= 1 && var.listener_rule_priority <= 50000
+    error_message = "listener_rule_priority must be between 1 and 50000."
+  }
+}
+
+variable "path_patterns" {
+  description = "Request path patterns routed to this service, for example [\"/*\"] or [\"/orders/*\"]."
   type        = list(string)
 
   validation {
-    condition     = length(var.public_subnet_ids) >= 2
-    error_message = "At least two public_subnet_ids are required for the Application Load Balancer."
+    condition     = length(var.path_patterns) >= 1 && alltrue([for p in var.path_patterns : startswith(p, "/")])
+    error_message = "path_patterns must contain at least one pattern and every pattern must start with a forward slash."
   }
 }
 
@@ -215,8 +266,3 @@ variable "ssm_api_key_parameter_name" {
   }
 }
 
-variable "enable_deletion_protection" {
-  description = "Whether to enable deletion protection on the Application Load Balancer."
-  type        = bool
-  default     = false
-}

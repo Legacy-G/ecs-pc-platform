@@ -5,17 +5,17 @@ output "vpc_id" {
 
 output "alb_dns_name" {
   description = "Public DNS name of the prod Application Load Balancer."
-  value       = module.ecs_service.alb_dns_name
+  value       = module.alb.dns_name
 }
 
 output "service_url" {
   description = "Public HTTP URL of the deployed prod API service."
-  value       = module.ecs_service.service_url
+  value       = "http://${module.alb.dns_name}"
 }
 
 output "cluster_name" {
   description = "Name of the prod ECS cluster."
-  value       = module.ecs_service.cluster_name
+  value       = module.ecs_cluster.cluster_name
 }
 
 output "service_name" {

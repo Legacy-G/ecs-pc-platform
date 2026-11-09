@@ -16,7 +16,11 @@ aws freetier get-account-plan-state \
   --query '{Plan:accountPlanType,Status:accountPlanStatus,CreditsUSD:accountPlanRemainingCredits.amount,Expires:accountPlanExpirationDate}' \
   --output table
 
-echo "== Month-to-date unblended cost =="
+HOURLY_DEV_COST="0.0574"
+DAILY_DEV_COST="1.38"
+echo "== Expected dev running cost in ${REGION} (1 ALB + 2 ALB public IPs + 1 Fargate task + 1 task public IP) =="
+echo "Rate: USD ${HOURLY_DEV_COST}/hr (~USD ${DAILY_DEV_COST}/day). Always destroy with 'make down' when not actively testing."
+echo ""
 START_DATE="$(date -u +%Y-%m-01)"
 END_DATE="$(date -u +%Y-%m-%d)"
 if [[ "$START_DATE" == "$END_DATE" ]]; then
