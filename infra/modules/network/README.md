@@ -42,6 +42,7 @@ Provisions a two-AZ VPC in `eu-north-1` with public and private subnets, an Inte
 | `vpc_cidr` | IPv4 CIDR block for the VPC. | `string` | `"10.20.0.0/16"` | no |
 | `public_subnet_cidrs` | Two public IPv4 subnet CIDRs across two Availability Zones. | `list(string)` | `["10.20.1.0/24", "10.20.2.0/24"]` | no |
 | `private_subnet_cidrs` | Two private IPv4 subnet CIDRs across two Availability Zones. | `list(string)` | `["10.20.11.0/24", "10.20.12.0/24"]` | no |
+| `enable_private_subnets` | Whether to create private subnets and a private route table. They exist for the prod NAT variant (ADR 0006); dev leaves this false. Forced on when enable_nat_gateway is true. | `bool` | `false` | no |
 | `enable_nat_gateway` | Whether to provision a single NAT Gateway in public subnet 0 for private subnet egress (false in dev to avoid hourly NAT charges). | `bool` | `false` | no |
 
 ## Outputs
@@ -51,6 +52,6 @@ Provisions a two-AZ VPC in `eu-north-1` with public and private subnets, an Inte
 | `vpc_id` | ID of the provisioned VPC. |
 | `vpc_cidr` | IPv4 CIDR block of the VPC. |
 | `public_subnet_ids` | List of public subnet IDs across two Availability Zones. |
-| `private_subnet_ids` | List of private subnet IDs across two Availability Zones. |
+| `private_subnet_ids` | Private subnet IDs across two Availability Zones. Empty unless enable_private_subnets or enable_nat_gateway is true. |
 | `availability_zones` | Two Availability Zones selected for the VPC subnets. |
 <!-- END_TF_DOCS -->

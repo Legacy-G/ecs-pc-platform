@@ -1,2 +1,6 @@
-$ docker images damolak-api:local-dev --format "Repository={{.Repository}}:{{.Tag}} Size={{.Size}}"
-Repository=damolak-api:local-dev Size=211MB
+# Evidence: API container image size
+# Commit: 9f2d576048bd548fb2bebc1a2d750a1ce86aa0a9
+# Timestamp (UTC): 2026-11-09T21:26:31Z
+
+REPOSITORY    TAG         SIZE
+damolak-api   local-dev   211MB

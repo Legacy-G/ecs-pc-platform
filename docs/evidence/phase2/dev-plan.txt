@@ -1,68 +1,62 @@
-Stack: infra/envs/dev (region=eu-north-1, state=local/unapplied, apply=false)
+# Evidence: Terraform offline plan test for infra/envs/dev
+# Commit: 9f2d576048bd548fb2bebc1a2d750a1ce86aa0a9
+# Timestamp (UTC): 2026-11-09T21:26:31Z
 
-Data Sources Evaluated:
-  data.aws_caller_identity.current
-  module.network.data.aws_availability_zones.available (["eu-north-1a", "eu-north-1b"])
-  module.ecs_service.data.aws_caller_identity.current
-  module.ecs_service.data.aws_iam_policy_document.ecs_task_assume_role
-  module.ecs_service.data.aws_iam_policy_document.execution_ssm
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mModule not installed[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m  on main.tf line 11:
+[31m│[0m [0m  11: [4mmodule "network"[0m {[0m
+[31m│[0m [0m
+[31m│[0m [0mThis module is not yet installed. Run "terraform init" to install all
+[31m│[0m [0mmodules required by this configuration.
+[31m╵[0m[0m
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mModule not installed[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m  on main.tf line 23:
+[31m│[0m [0m  23: [4mmodule "alb"[0m {[0m
+[31m│[0m [0m
+[31m│[0m [0mThis module is not yet installed. Run "terraform init" to install all
+[31m│[0m [0mmodules required by this configuration.
+[31m╵[0m[0m
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mModule not installed[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m  on main.tf line 33:
+[31m│[0m [0m  33: [4mmodule "ecs_cluster"[0m {[0m
+[31m│[0m [0m
+[31m│[0m [0mThis module is not yet installed. Run "terraform init" to install all
+[31m│[0m [0mmodules required by this configuration.
+[31m╵[0m[0m
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mModule not installed[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m  on main.tf line 40:
+[31m│[0m [0m  40: [4mmodule "ecs_service"[0m {[0m
+[31m│[0m [0m
+[31m│[0m [0mThis module is not yet installed. Run "terraform init" to install all
+[31m│[0m [0mmodules required by this configuration.
+[31m╵[0m[0m
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mModule not installed[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m  on main.tf line 71:
+[31m│[0m [0m  71: [4mmodule "observability"[0m {[0m
+[31m│[0m [0m
+[31m│[0m [0mThis module is not yet installed. Run "terraform init" to install all
+[31m│[0m [0mmodules required by this configuration.
+[31m╵[0m[0m
 
-Planned Managed Resources (41 to add):
-
-  Module: module.network (13 resources; enable_nat_gateway = false):
-    + module.network.aws_vpc.this (cidr_block = "10.20.0.0/16", enable_dns_support = true, enable_dns_hostnames = true)
-    + module.network.aws_default_security_group.default
-    + module.network.aws_internet_gateway.this
-    + module.network.aws_subnet.public[0] ("10.20.1.0/24", az = "eu-north-1a", map_public_ip_on_launch = false)
-    + module.network.aws_subnet.public[1] ("10.20.2.0/24", az = "eu-north-1b", map_public_ip_on_launch = false)
-    + module.network.aws_subnet.private[0] ("10.20.11.0/24", az = "eu-north-1a", map_public_ip_on_launch = false)
-    + module.network.aws_subnet.private[1] ("10.20.12.0/24", az = "eu-north-1b", map_public_ip_on_launch = false)
-    + module.network.aws_route_table.public (0.0.0.0/0 -> aws_internet_gateway.this)
-    + module.network.aws_route_table_association.public[0]
-    + module.network.aws_route_table_association.public[1]
-    + module.network.aws_route_table.private
-    + module.network.aws_route_table_association.private[0]
-    + module.network.aws_route_table_association.private[1]
-
-  Module: module.ecs_service (18 resources):
-    + module.ecs_service.aws_security_group.alb ("damolak-dev-alb-sg")
-    + module.ecs_service.aws_vpc_security_group_ingress_rule.alb_http_in (TCP 80 from 0.0.0.0/0)
-    + module.ecs_service.aws_vpc_security_group_egress_rule.alb_to_task (TCP 8000 to damolak-dev-task-sg)
-    + module.ecs_service.aws_security_group.task ("damolak-dev-task-sg")
-    + module.ecs_service.aws_vpc_security_group_ingress_rule.task_from_alb (TCP 8000 from damolak-dev-alb-sg)
-    + module.ecs_service.aws_vpc_security_group_egress_rule.task_https_out (TCP 443 to 0.0.0.0/0)
-    + module.ecs_service.aws_lb.this ("damolak-dev-alb", drop_invalid_header_fields = true, enable_deletion_protection = false)
-    + module.ecs_service.aws_lb_target_group.this ("damolak-dev-tg", port = 8000, target_type = "ip", deregistration_delay = 25, health_check.path = "/api/v1/health/")
-    + module.ecs_service.aws_lb_listener.http (port = 80, protocol = "HTTP")
-    + module.ecs_service.aws_ecs_cluster.this ("damolak-dev-cluster", containerInsights = "enabled")
-    + module.ecs_service.aws_iam_role.execution ("damolak-dev-task-exec-role")
-    + module.ecs_service.aws_iam_role_policy_attachment.execution_managed (AmazonECSTaskExecutionRolePolicy)
-    + module.ecs_service.aws_iam_role_policy.execution_ssm (ssm:GetParameters on arn:aws:ssm:eu-north-1:<account-redacted>:parameter/damolak/dev/api-key)
-    + module.ecs_service.aws_iam_role.task ("damolak-dev-task-role")
-    + module.ecs_service.aws_ecs_task_definition.this (family = "damolak-dev-api", cpu = "256", memory = "512", readonlyRootFilesystem = true)
-    + module.ecs_service.aws_ecs_service.this ("damolak-dev-api", desired_count = 1, wait_for_steady_state = true, deployment_circuit_breaker = { enable = true, rollback = true }, assign_public_ip = true)
-    + module.ecs_service.aws_appautoscaling_target.ecs (min_capacity = 1, max_capacity = 2)
-    + module.ecs_service.aws_appautoscaling_policy.cpu (ECSServiceAverageCPUUtilization = 70)
-
-  Module: module.observability (10 resources):
-    + module.observability.aws_cloudwatch_log_group.ecs (name = "/ecs/damolak-dev", retention_in_days = 7)
-    + module.observability.aws_sns_topic.alerts (name = "damolak-dev-alerts", kms_master_key_id = "alias/aws/sns")
-    + module.observability.aws_sns_topic_subscription.email[0] (protocol = "email", endpoint = (sensitive))
-    + module.observability.aws_cloudwatch_log_metric_filter.app_errors (pattern = "{ $.level = \"ERROR\" }")
-    + module.observability.aws_cloudwatch_metric_alarm.alb_5xx (treat_missing_data = "notBreaching")
-    + module.observability.aws_cloudwatch_metric_alarm.unhealthy_hosts (treat_missing_data = "notBreaching")
-    + module.observability.aws_cloudwatch_metric_alarm.running_task_count (treat_missing_data = "notBreaching")
-    + module.observability.aws_cloudwatch_metric_alarm.high_cpu (treat_missing_data = "notBreaching")
-    + module.observability.aws_cloudwatch_metric_alarm.app_log_errors (treat_missing_data = "notBreaching")
-    + module.observability.aws_cloudwatch_dashboard.this (dashboard_name = "damolak-dev-overview")
-
-Plan: 41 to add, 0 to change, 0 to destroy (40 when alert_email is empty).
-
+===============================================================================
 Estimated Hourly and Daily Cost of Dev Stack (eu-north-1):
-  - Application Load Balancer fixed hourly:       USD 0.0225 / hr (USD 0.540 / day)
-  - ALB LCU usage (light test traffic ~0.1 LCU):  USD 0.0008 / hr (USD 0.019 / day)
-  - ECS Fargate 1 task (0.25 vCPU, 0.5 GB RAM):   USD 0.0123 / hr (USD 0.295 / day)
-  - Public IPv4 address on 1 Fargate task ENI:    USD 0.0050 / hr (USD 0.120 / day)
-  - NAT Gateway (disabled in dev):                USD 0.0000 / hr (USD 0.000 / day)
+  - Application Load Balancer fixed hourly:       USD 0.02394 / hr (USD 0.575 / day)
+  - ALB LCU usage (light test traffic ~0.1 LCU):  USD 0.00076 / hr (USD 0.018 / day)
+  - Two ALB public IPv4 addresses (2 AZs):        USD 0.01000 / hr (USD 0.240 / day)
+  - ECS Fargate 1 task (0.25 vCPU, 0.5 GB RAM):   USD 0.01358 / hr (USD 0.326 / day)
+  - Public IPv4 address on 1 Fargate task ENI:    USD 0.00500 / hr (USD 0.120 / day)
+  - NAT Gateway (disabled in dev):                USD 0.00000 / hr (USD 0.000 / day)
   -------------------------------------------------------------------------------
-  Total Active Dev Runtime Rate:                 ~USD 0.0406 / hr (~USD 0.974 / day)
+  Total Active Dev Runtime Rate:                  USD 0.05328 - 0.05740 / hr
+  Reference Planned Daily Rate:                  ~USD 1.38 / day
+===============================================================================

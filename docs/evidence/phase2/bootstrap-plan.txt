@@ -1,33 +1,9 @@
-Stack: infra/bootstrap (region=eu-north-1, state=local, apply=false)
+# Evidence: Terraform offline plan test for infra/bootstrap
+# Commit: 9f2d576048bd548fb2bebc1a2d750a1ce86aa0a9
+# Timestamp (UTC): 2026-11-09T21:26:31Z
 
-Data Sources Evaluated:
-  data.aws_caller_identity.current
-  data.aws_iam_policy_document.enforce_tls
-
-Planned Managed Resources (6 to add):
-  + aws_s3_bucket.tfstate
-      bucket        = "damolak-tfstate-<account-redacted>-eu-north-1"
-      force_destroy = false
-  + aws_s3_bucket_versioning.tfstate
-      versioning_configuration[0].status = "Enabled"
-  + aws_s3_bucket_server_side_encryption_configuration.tfstate
-      rule[0].apply_server_side_encryption_by_default[0].sse_algorithm = "AES256"
-  + aws_s3_bucket_public_access_block.tfstate
-      block_public_acls       = true
-      block_public_policy     = true
-      ignore_public_acls      = true
-      restrict_public_buckets = true
-  + aws_s3_bucket_lifecycle_configuration.tfstate
-      rule[0].id                                                         = "expire-noncurrent-state-versions"
-      rule[0].status                                                     = "Enabled"
-      rule[0].noncurrent_version_expiration[0].noncurrent_days           = 30
-      rule[0].abort_incomplete_multipart_upload[0].days_after_initiation = 7
-  + aws_s3_bucket_policy.tfstate
-      policy = (Deny s3:* when aws:SecureTransport == false)
-
-Plan: 6 to add, 0 to change, 0 to destroy.
-
-Changes to Outputs:
-  + aws_region          = "eu-north-1"
-  + tfstate_bucket_arn  = (known after apply)
-  + tfstate_bucket_name = "damolak-tfstate-<account-redacted>-eu-north-1"
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mregistry.terraform.io/hashicorp/aws: there is no package for registry.terraform.io/hashicorp/aws 6.72.0 cached in .terraform\providers[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m
+[31m╵[0m[0m

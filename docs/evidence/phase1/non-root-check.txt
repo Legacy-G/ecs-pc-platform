@@ -1,2 +1,5 @@
-$ docker compose exec -T api id
+# Evidence: API container runtime user id
+# Commit: 9f2d576048bd548fb2bebc1a2d750a1ce86aa0a9
+# Timestamp (UTC): 2026-11-09T21:26:31Z
+
 uid=10001(appuser) gid=10001(appgroup) groups=10001(appgroup)

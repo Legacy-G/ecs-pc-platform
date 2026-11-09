@@ -1,0 +1,7 @@
+services:
+  api:
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    environment:
+      PYTHONDONTWRITEBYTECODE: "1"

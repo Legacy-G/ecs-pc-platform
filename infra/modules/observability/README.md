@@ -2,6 +2,8 @@
 
 Provisions a CloudWatch Log Group (`retention_in_days = 7` in `dev`), an encrypted SNS alert topic (`alias/aws/sns`) with optional email subscription, a structured JSON `{ $.level = "ERROR" }` metric filter, five CloudWatch metric alarms (`treat_missing_data = "notBreaching"`), and a CloudWatch operational dashboard.
 
+Container Insights is disabled to avoid custom metric and performance log charges (ADR 0005). Availability is monitored via ALB `HealthyHostCount` instead of `RunningTaskCount`.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
@@ -26,7 +28,7 @@ Provisions a CloudWatch Log Group (`retention_in_days = 7` in `dev`), an encrypt
 | `aws_cloudwatch_log_metric_filter.app_errors` | resource |
 | `aws_cloudwatch_metric_alarm.alb_5xx` | resource |
 | `aws_cloudwatch_metric_alarm.unhealthy_hosts` | resource |
-| `aws_cloudwatch_metric_alarm.running_task_count` | resource |
+| `aws_cloudwatch_metric_alarm.healthy_hosts_low` | resource |
 | `aws_cloudwatch_metric_alarm.high_cpu` | resource |
 | `aws_cloudwatch_metric_alarm.app_log_errors` | resource |
 | `aws_cloudwatch_dashboard.this` | resource |

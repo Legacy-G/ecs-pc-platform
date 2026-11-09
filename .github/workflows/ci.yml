@@ -119,6 +119,29 @@ jobs:
           bash scripts/smoke.sh "http://127.0.0.1:8000" "${GITHUB_SHA}"
           docker compose down --remove-orphans
 
+      - name: Verify read-only root filesystem and tmpfs write isolation
+        run: |
+          GIT_SHA="${GITHUB_SHA}" docker compose \
+            -f docker-compose.yml -f docker-compose.test.yml up -d
+          bash scripts/smoke.sh "http://127.0.0.1:8000" "${GITHUB_SHA}"
+          # Confirm PYTHONDONTWRITEBYTECODE is set and python refuses to compile pyc
+          docker compose -f docker-compose.yml -f docker-compose.test.yml exec -T \
+            api python -c "import sys; assert sys.dont_write_bytecode is True"
+          # Confirm writing outside /tmp fails with Read-only file system
+          docker compose -f docker-compose.yml -f docker-compose.test.yml exec -T \
+            api python -c "
+          import sys
+          try:
+              open('/app/fail_test', 'w').write('fail')
+              sys.exit(1)
+          except OSError:
+              sys.exit(0)
+          "
+          # Confirm /tmp allows temporary file creation
+          docker compose -f docker-compose.yml -f docker-compose.test.yml exec -T \
+            api touch /tmp/health_ok
+          docker compose -f docker-compose.yml -f docker-compose.test.yml down --remove-orphans
+
   terraform-validate:
     name: Terraform Format and Validate (Offline)
     runs-on: ubuntu-24.04

@@ -1,42 +1,5 @@
-$ docker run --rm \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v "${GITHUB_WORKSPACE}:/work:ro" \
-  aquasec/trivy:0.76.2 image \
-  --ignorefile /work/.trivyignore \
-  --ignore-unfixed \
-  --severity HIGH,CRITICAL \
-  --exit-code 1 \
-  damolak-api:local-dev
+# Evidence: trivy container vulnerability and secret scan
+# Commit: 9f2d576048bd548fb2bebc1a2d750a1ce86aa0a9
+# Timestamp (UTC): 2026-11-09T21:26:31Z
 
-Report Summary
-
-+----------------------------------------------------------------------------------+------------+-----------------+---------+
-|                                      Target                                      |    Type    | Vulnerabilities | Secrets |
-+----------------------------------------------------------------------------------+------------+-----------------+---------+
-| damolak-api:local-dev (debian 12.15)                                             |   debian   |        0        |    -    |
-+----------------------------------------------------------------------------------+------------+-----------------+---------+
-| opt/venv/lib/python3.13/site-packages/annotated_doc-0.0.5.dist-info/METADATA     | python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/annotated_types-0.8.0.dist-info/METADATA   | python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/anyio-4.16.0.dist-info/METADATA            | python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/certifi-2026.10.23.dist-info/METADATA      | python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/click-8.5.1.dist-info/METADATA             | python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/fastapi-0.162.2.dist-info/METADATA         | python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/h11-0.16.0.dist-info/METADATA              | python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/httpcore-1.0.9.dist-info/METADATA          | python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/httpx-0.28.1.dist-info/METADATA            | python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/idna-3.20.dist-info/METADATA               | python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/jinja2-3.1.6.dist-info/METADATA            | python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/markupsafe-3.0.4.dist-info/METADATA        | python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/opentelemetry_api-1.45.2.dist-info/METADATA| python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/pydantic-2.14.3.dist-info/METADATA         | python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/pydantic_core-2.50.4.dist-info/METADATA    | python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/pydantic_settings-2.16.2.dist-info/METADATA| python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/python_dotenv-1.2.4.dist-info/METADATA     | python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/starlette-1.10.0.dist-info/METADATA        | python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/typing_extensions-4.16.0.dist-info/METADATA| python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/typing_inspection-0.4.5.dist-info/METADATA | python-pkg |        0        |    -    |
-| opt/venv/lib/python3.13/site-packages/uvicorn-0.54.0.dist-info/METADATA          | python-pkg |        0        |    -    |
-+----------------------------------------------------------------------------------+------------+-----------------+---------+
-Legend:
-- '-': Not scanned
-- '0': Clean (no security findings detected)
+2026-11-09T21:26:59Z	FATAL	Fatal error	flag error: unable to convert flags to options: ignore file not found: C:/Program Files/Git/work/.trivyignore

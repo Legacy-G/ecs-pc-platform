@@ -23,7 +23,7 @@ output "alarm_names" {
   value = [
     aws_cloudwatch_metric_alarm.alb_5xx.alarm_name,
     aws_cloudwatch_metric_alarm.unhealthy_hosts.alarm_name,
-    aws_cloudwatch_metric_alarm.running_task_count.alarm_name,
+    aws_cloudwatch_metric_alarm.healthy_hosts_low.alarm_name,
     aws_cloudwatch_metric_alarm.high_cpu.alarm_name,
     aws_cloudwatch_metric_alarm.app_log_errors.alarm_name,
   ]
