@@ -5,12 +5,22 @@ set -euo pipefail
 
 BASE_URL="${1:-http://127.0.0.1:8000}"
 EXPECTED_SHA="${2:-}"
+SSM_PARAM_NAME="${3:-}"
 MAX_ATTEMPTS="${SMOKE_MAX_ATTEMPTS:-20}"
 SLEEP_SECONDS="${SMOKE_SLEEP_SECONDS:-6}"
 
 BASE_URL="${BASE_URL%/}"
 
 echo "Smoke testing ${BASE_URL} (expected_sha=${EXPECTED_SHA:-any})"
+
+API_KEY=""
+if [[ -n "${SSM_PARAM_NAME}" ]]; then
+  echo "Fetching API key from SSM parameter ${SSM_PARAM_NAME} without echoing..."
+  export AWS_PROFILE="${AWS_PROFILE:-damolak}"
+  export AWS_REGION="${AWS_REGION:-eu-north-1}"
+  export AWS_PAGER=""
+  API_KEY="$(aws ssm get-parameter --name "${SSM_PARAM_NAME}" --with-decryption --query "Parameter.Value" --output text 2>/dev/null || true)"
+fi
 
 for ((attempt = 1; attempt <= MAX_ATTEMPTS; attempt++)); do
   if health_json="$(curl -fsS --max-time 5 "${BASE_URL}/api/v1/health/" 2>/dev/null)" &&
@@ -20,6 +30,18 @@ for ((attempt = 1; attempt <= MAX_ATTEMPTS; attempt++)); do
     if echo "$health_json" | grep -q '"status":"ok"'; then
       if [[ -z "$EXPECTED_SHA" ]] || echo "$info_json" | grep -q "\"git_sha\":\"${EXPECTED_SHA}\""; then
         if echo "$status_html" | grep -q "Runtime Telemetry"; then
+          if [[ -n "$API_KEY" ]]; then
+            echo "Testing authenticated POST /api/v1/echo/ using SSM key..."
+            echo_resp="$(curl -fsS -X POST "${BASE_URL}/api/v1/echo/" \
+              -H "Content-Type: application/json" \
+              -H "X-API-Key: ${API_KEY}" \
+              -d '{"message":"smoke-check"}' 2>/dev/null || true)"
+            if ! echo "$echo_resp" | grep -q '"echo":"smoke-check"'; then
+              echo "Authenticated echo verification failed: ${echo_resp}" >&2
+              exit 1
+            fi
+            echo "echo  : verified authenticated response"
+          fi
           echo "smoke-test: PASS on attempt ${attempt}/${MAX_ATTEMPTS}"
           echo "health: ${health_json}"
           echo "info  : ${info_json}"
