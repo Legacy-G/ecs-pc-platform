@@ -43,13 +43,13 @@ INSTANCES="$(aws ec2 describe-instances --region "$REGION" --filters Name=instan
 ECR_REPOS="$(aws ecr describe-repositories --region "$REGION" --query 'repositories[].repositoryName' --output text)"
 LOG_GROUPS="$(aws logs describe-log-groups --region "$REGION" --query 'logGroups[].logGroupName' --output text)"
 
-printf "ECS clusters : %s\n" "${ECS_CLUSTERS:-none}"
-printf "ALBs         : %s\n" "${ALB_ARNS:-none}"
-printf "NAT gateways : %s\n" "${NAT_GWS:-none}"
-printf "Elastic IPs  : %s\n" "${EIPS:-none}"
-printf "EC2 instances: %s\n" "${INSTANCES:-none}"
-printf "ECR repos    : %s\n" "${ECR_REPOS:-none}"
-printf "Log groups   : %s\n" "${LOG_GROUPS:-none}"
+printf "ECS clusters   : %s\n" "${ECS_CLUSTERS:-none}"
+printf "ALBs           : %s\n" "${ALB_ARNS:-none}"
+printf "NAT gateways   : %s\n" "${NAT_GWS:-none}"
+printf "ALB public IPs : %s\n" "${EIPS:-none}"
+printf "EC2 instances  : %s\n" "${INSTANCES:-none}"
+printf "ECR repos      : %s\n" "${ECR_REPOS:-none}"
+printf "Log groups     : %s\n" "${LOG_GROUPS:-none}"
 
 if [[ -n "$ECS_CLUSTERS" || -n "$ALB_ARNS" || -n "$NAT_GWS" || -n "$EIPS" || -n "$INSTANCES" ]]; then
   echo "COST_CHECK_WARN: One or more hourly-billed resources are active in ${REGION}." >&2
