@@ -1,0 +1,35 @@
+# Commit: 7ef87f8
+# Generated: 2026-11-10T11:20:45Z
+# Cost Check: Phase 3B Dev Infrastructure Verification
+== Account plan and remaining credits (us-east-1 endpoint) ==
+----------------------------------------------------------------------
+|                         GetAccountPlanState                        |
++------------+------------------------------------+-------+----------+
+| CreditsUSD |              Expires               | Plan  | Status   |
++------------+------------------------------------+-------+----------+
+|  119.97    |  2027-05-08T08:04:34.789000+00:00  |  FREE |  ACTIVE  |
++------------+------------------------------------+-------+----------+
+== Expected dev running cost in eu-north-1 (1 ALB + 2 ALB public IPs + 1 Fargate task + 1 task public IP) ==
+Rate: USD 0.0574/hr (~USD 1.38/day). Always destroy with 'make down' when not actively testing.
+
+[
+    {
+        "BlendedCost": {
+            "Amount": "0",
+            "Unit": "USD"
+        },
+        "UnblendedCost": {
+            "Amount": "0",
+            "Unit": "USD"
+        }
+    }
+]
+== Billable resource check in eu-north-1 ==
+ECS clusters : arn:aws:ecs:eu-north-1:<ACCOUNT_ID>:cluster/damolak-dev-cluster
+ALBs         : arn:aws:elasticloadbalancing:eu-north-1:<ACCOUNT_ID>:loadbalancer/app/damolak-dev-alb/6c6a0c7fa9fb0e8c
+NAT gateways : none
+Elastic IPs  : eipalloc-0212f0f9e08329467	eipalloc-0a4fc82f1af5e26ea
+EC2 instances: none
+ECR repos    : damolak-api
+Log groups   : /ecs/damolak-dev
+COST_CHECK_WARN: One or more hourly-billed resources are active in eu-north-1.
