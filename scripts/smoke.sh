@@ -19,6 +19,7 @@ if [[ -n "${SSM_PARAM_NAME}" ]]; then
   export AWS_PROFILE="${AWS_PROFILE:-damolak}"
   export AWS_REGION="${AWS_REGION:-eu-north-1}"
   export AWS_PAGER=""
+  export MSYS_NO_PATHCONV=1
   API_KEY="$(aws ssm get-parameter --name "${SSM_PARAM_NAME}" --with-decryption --query "Parameter.Value" --output text 2>/dev/null || true)"
 fi
 

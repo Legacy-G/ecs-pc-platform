@@ -1,0 +1,113 @@
+# Commit: 7ef87f8
+# Generated: 2026-11-10T11:18:30Z
+# Stack: infra/envs/dev - CloudWatch Metric Alarms (5 total)
+{
+    "MetricAlarms": [
+        {
+            "AlarmName": "damolak-dev-alb-5xx",
+            "AlarmArn": "arn:aws:cloudwatch:eu-north-1:<ACCOUNT_ID>:alarm:damolak-dev-alb-5xx",
+            "AlarmDescription": "Target 5xx responses exceeded 5 over 1 minute",
+            "StateValue": "OK",
+            "MetricName": "HTTPCode_Target_5XX_Count",
+            "Namespace": "AWS/ApplicationELB",
+            "Statistic": "Sum",
+            "Dimensions": [
+                {
+                    "Name": "LoadBalancer",
+                    "Value": "app/damolak-dev-alb/6c6a0c7fa9fb0e8c"
+                },
+                {
+                    "Name": "TargetGroup",
+                    "Value": "targetgroup/damolak-dev-api-tg/ec7386e43150bf7f"
+                }
+            ],
+            "Period": 60,
+            "EvaluationPeriods": 1,
+            "Threshold": 5.0,
+            "ComparisonOperator": "GreaterThanThreshold"
+        },
+        {
+            "AlarmName": "damolak-dev-app-log-errors",
+            "AlarmArn": "arn:aws:cloudwatch:eu-north-1:<ACCOUNT_ID>:alarm:damolak-dev-app-log-errors",
+            "AlarmDescription": "Application emitted one or more structured ERROR log entries in 1 minute",
+            "StateValue": "OK",
+            "MetricName": "AppErrorCount",
+            "Namespace": "damolak/dev",
+            "Statistic": "Sum",
+            "Dimensions": [],
+            "Period": 60,
+            "EvaluationPeriods": 1,
+            "Threshold": 0.0,
+            "ComparisonOperator": "GreaterThanThreshold"
+        },
+        {
+            "AlarmName": "damolak-dev-cpu-high",
+            "AlarmArn": "arn:aws:cloudwatch:eu-north-1:<ACCOUNT_ID>:alarm:damolak-dev-cpu-high",
+            "AlarmDescription": "ECS service average CPU utilization exceeded 80 percent for 4 minutes",
+            "StateValue": "OK",
+            "MetricName": "CPUUtilization",
+            "Namespace": "AWS/ECS",
+            "Statistic": "Average",
+            "Dimensions": [
+                {
+                    "Name": "ServiceName",
+                    "Value": "damolak-dev-api"
+                },
+                {
+                    "Name": "ClusterName",
+                    "Value": "damolak-dev-cluster"
+                }
+            ],
+            "Period": 120,
+            "EvaluationPeriods": 2,
+            "Threshold": 80.0,
+            "ComparisonOperator": "GreaterThanThreshold"
+        },
+        {
+            "AlarmName": "damolak-dev-healthy-hosts-low",
+            "AlarmArn": "arn:aws:cloudwatch:eu-north-1:<ACCOUNT_ID>:alarm:damolak-dev-healthy-hosts-low",
+            "AlarmDescription": "ALB target group healthy host count dropped below 1 (replaces ECS ContainerInsights RunningTaskCount to avoid extra CloudWatch costs)",
+            "StateValue": "OK",
+            "MetricName": "HealthyHostCount",
+            "Namespace": "AWS/ApplicationELB",
+            "Statistic": "Minimum",
+            "Dimensions": [
+                {
+                    "Name": "LoadBalancer",
+                    "Value": "app/damolak-dev-alb/6c6a0c7fa9fb0e8c"
+                },
+                {
+                    "Name": "TargetGroup",
+                    "Value": "targetgroup/damolak-dev-api-tg/ec7386e43150bf7f"
+                }
+            ],
+            "Period": 60,
+            "EvaluationPeriods": 1,
+            "Threshold": 1.0,
+            "ComparisonOperator": "LessThanThreshold"
+        },
+        {
+            "AlarmName": "damolak-dev-unhealthy-hosts",
+            "AlarmArn": "arn:aws:cloudwatch:eu-north-1:<ACCOUNT_ID>:alarm:damolak-dev-unhealthy-hosts",
+            "AlarmDescription": "ALB target group has one or more unhealthy targets for 2 minutes",
+            "StateValue": "OK",
+            "MetricName": "UnHealthyHostCount",
+            "Namespace": "AWS/ApplicationELB",
+            "Statistic": "Maximum",
+            "Dimensions": [
+                {
+                    "Name": "LoadBalancer",
+                    "Value": "app/damolak-dev-alb/6c6a0c7fa9fb0e8c"
+                },
+                {
+                    "Name": "TargetGroup",
+                    "Value": "targetgroup/damolak-dev-api-tg/ec7386e43150bf7f"
+                }
+            ],
+            "Period": 60,
+            "EvaluationPeriods": 2,
+            "Threshold": 0.0,
+            "ComparisonOperator": "GreaterThanThreshold"
+        }
+    ]
+}

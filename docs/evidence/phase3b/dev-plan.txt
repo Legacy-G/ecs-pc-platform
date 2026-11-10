@@ -1,0 +1,57 @@
+# Commit: 7ef87f8
+# Generated: 2026-11-10T11:10:40Z
+# Stack: infra/envs/dev - Full Terraform Plan Post-Deployment
+Acquiring state lock. This may take a few moments...
+module.network.data.aws_availability_zones.available: Reading...
+module.ecs_cluster.aws_ecs_cluster.this: Refreshing state... [id=arn:aws:ecs:eu-north-1:<ACCOUNT_ID>:cluster/damolak-dev-cluster]
+module.observability.aws_sns_topic.alerts: Refreshing state... [id=arn:aws:sns:eu-north-1:<ACCOUNT_ID>:damolak-dev-alerts]
+module.ecs_service.data.aws_iam_policy_document.ecs_task_assume_role: Reading...
+module.observability.aws_cloudwatch_log_group.ecs: Refreshing state... [id=/ecs/damolak-dev]
+module.network.aws_vpc.this: Refreshing state... [id=vpc-04520551754cec84f]
+module.ecs_service.data.aws_iam_policy_document.ecs_task_assume_role: Read complete after 0s [id=1077804475]
+data.aws_caller_identity.current: Reading...
+module.ecs_service.data.aws_caller_identity.current: Reading...
+module.ecs_service.aws_iam_role.execution: Refreshing state... [id=damolak-dev-api-task-exec-role]
+module.ecs_service.aws_iam_role.task: Refreshing state... [id=damolak-dev-api-task-role]
+module.ecs_service.data.aws_caller_identity.current: Read complete after 0s [id=<ACCOUNT_ID>]
+module.ecs_service.data.aws_iam_policy_document.execution_ssm: Reading...
+module.ecs_service.data.aws_iam_policy_document.execution_ssm: Read complete after 0s [id=803029136]
+data.aws_caller_identity.current: Read complete after 1s [id=<ACCOUNT_ID>]
+module.network.data.aws_availability_zones.available: Read complete after 1s [id=eu-north-1]
+module.observability.aws_cloudwatch_log_metric_filter.app_errors: Refreshing state... [id=damolak-dev-json-error-filter]
+module.observability.aws_sns_topic_subscription.email[0]: Refreshing state... [id=arn:aws:sns:eu-north-1:<ACCOUNT_ID>:damolak-dev-alerts:82c9c050-42e3-4fc4-a6fb-80648143062a]
+module.observability.aws_cloudwatch_metric_alarm.app_log_errors: Refreshing state... [id=damolak-dev-app-log-errors]
+module.ecs_service.aws_iam_role_policy_attachment.execution_managed: Refreshing state... [id=damolak-dev-api-task-exec-role/arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy]
+module.ecs_service.aws_iam_role_policy.execution_ssm: Refreshing state... [id=damolak-dev-api-task-exec-role:damolak-dev-api-exec-ssm-policy]
+module.network.aws_internet_gateway.this: Refreshing state... [id=igw-0c8034af596b656e4]
+module.network.aws_subnet.public[1]: Refreshing state... [id=subnet-08a4714e44403b1f4]
+module.network.aws_default_security_group.default: Refreshing state... [id=sg-03f22471f97c724dc]
+module.alb.aws_security_group.alb: Refreshing state... [id=sg-0a51eb1cbf69cf346]
+module.ecs_service.aws_security_group.task: Refreshing state... [id=sg-0c014f4307d24cb2a]
+module.network.aws_subnet.public[0]: Refreshing state... [id=subnet-05dc42a65f8045df1]
+module.ecs_service.aws_lb_target_group.this: Refreshing state... [id=arn:aws:elasticloadbalancing:eu-north-1:<ACCOUNT_ID>:targetgroup/damolak-dev-api-tg/ec7386e43150bf7f]
+module.ecs_service.aws_ecs_task_definition.this: Refreshing state... [id=damolak-dev-api]
+module.network.aws_route_table.public: Refreshing state... [id=rtb-0f47f766df322ae6b]
+module.alb.aws_vpc_security_group_ingress_rule.http_in: Refreshing state... [id=sgr-0397fb063c9784f9e]
+module.ecs_service.aws_vpc_security_group_ingress_rule.task_from_alb: Refreshing state... [id=sgr-0638d46fcdcf89be2]
+module.ecs_service.aws_vpc_security_group_egress_rule.task_https_out: Refreshing state... [id=sgr-0a4ef7ed1a7586bf6]
+module.ecs_service.aws_vpc_security_group_egress_rule.alb_to_task: Refreshing state... [id=sgr-01de86874eab55607]
+module.alb.aws_lb.this: Refreshing state... [id=arn:aws:elasticloadbalancing:eu-north-1:<ACCOUNT_ID>:loadbalancer/app/damolak-dev-alb/6c6a0c7fa9fb0e8c]
+module.network.aws_route_table_association.public[1]: Refreshing state... [id=rtbassoc-082fdc4e23c779c2d]
+module.network.aws_route_table_association.public[0]: Refreshing state... [id=rtbassoc-00deb0f0d1e79f201]
+module.observability.aws_cloudwatch_metric_alarm.alb_5xx: Refreshing state... [id=damolak-dev-alb-5xx]
+module.observability.aws_cloudwatch_metric_alarm.healthy_hosts_low: Refreshing state... [id=damolak-dev-healthy-hosts-low]
+module.alb.aws_lb_listener.http: Refreshing state... [id=arn:aws:elasticloadbalancing:eu-north-1:<ACCOUNT_ID>:listener/app/damolak-dev-alb/6c6a0c7fa9fb0e8c/af1ebefca37646a1]
+module.observability.aws_cloudwatch_metric_alarm.unhealthy_hosts: Refreshing state... [id=damolak-dev-unhealthy-hosts]
+module.ecs_service.aws_lb_listener_rule.this: Refreshing state... [id=arn:aws:elasticloadbalancing:eu-north-1:<ACCOUNT_ID>:listener-rule/app/damolak-dev-alb/6c6a0c7fa9fb0e8c/af1ebefca37646a1/80e717ab55f3619b]
+module.ecs_service.aws_ecs_service.this: Refreshing state... [id=arn:aws:ecs:eu-north-1:<ACCOUNT_ID>:service/damolak-dev-cluster/damolak-dev-api]
+module.ecs_service.aws_appautoscaling_target.ecs: Refreshing state... [id=service/damolak-dev-cluster/damolak-dev-api]
+module.observability.aws_cloudwatch_dashboard.this: Refreshing state... [id=damolak-dev-overview]
+module.observability.aws_cloudwatch_metric_alarm.high_cpu: Refreshing state... [id=damolak-dev-cpu-high]
+module.ecs_service.aws_appautoscaling_policy.cpu: Refreshing state... [id=damolak-dev-api-cpu-autoscaling]
+
+No changes. Your infrastructure matches the configuration.
+
+Terraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.
+Releasing state lock. This may take a few moments...
