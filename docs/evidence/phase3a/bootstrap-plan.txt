@@ -1,0 +1,19 @@
+# Commit: 441515b
+# Generated: 2026-11-10T07:48:00Z
+# Stack: infra/bootstrap
+Acquiring state lock. This may take a few moments...
+[0m[1mdata.aws_caller_identity.current: Reading...[0m[0m
+[0m[1mdata.aws_caller_identity.current: Read complete after 2s [id=<ACCOUNT_ID>][0m
+[0m[1maws_s3_bucket.tfstate: Refreshing state... [id=damolak-tfstate-<ACCOUNT_ID>-eu-north-1][0m
+[0m[1maws_s3_bucket_versioning.tfstate: Refreshing state... [id=damolak-tfstate-<ACCOUNT_ID>-eu-north-1][0m
+[0m[1maws_s3_bucket_public_access_block.tfstate: Refreshing state... [id=damolak-tfstate-<ACCOUNT_ID>-eu-north-1][0m
+[0m[1mdata.aws_iam_policy_document.enforce_tls: Reading...[0m[0m
+[0m[1maws_s3_bucket_server_side_encryption_configuration.tfstate: Refreshing state... [id=damolak-tfstate-<ACCOUNT_ID>-eu-north-1][0m
+[0m[1mdata.aws_iam_policy_document.enforce_tls: Read complete after 0s [id=3564420292][0m
+[0m[1maws_s3_bucket_policy.tfstate: Refreshing state... [id=damolak-tfstate-<ACCOUNT_ID>-eu-north-1][0m
+[0m[1maws_s3_bucket_lifecycle_configuration.tfstate: Refreshing state... [id=damolak-tfstate-<ACCOUNT_ID>-eu-north-1][0m
+
+[0m[1m[32mNo changes.[0m[1m Your infrastructure matches the configuration.[0m
+
+[0mTerraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.

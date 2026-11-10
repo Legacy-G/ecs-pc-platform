@@ -1,0 +1,21 @@
+# Commit: 441515b
+# Generated: 2026-11-10T08:26:05Z
+# Stack: infra/envs/shared
+
+module.iam_ci.data.aws_caller_identity.current: Reading...
+module.budgets.aws_budgets_budget.monthly: Refreshing state... [id=<ACCOUNT_ID>:damolak-monthly-gross-budget]
+data.aws_caller_identity.current: Reading...
+module.ecr.aws_ecr_repository.this: Refreshing state... [id=damolak-api]
+module.iam_ci.data.aws_caller_identity.current: Read complete after 8s [id=<ACCOUNT_ID>]
+data.aws_caller_identity.current: Read complete after 7s [id=<ACCOUNT_ID>]
+module.iam_ci.data.aws_iam_policy_document.ci_deploy: Reading...
+module.iam_ci.data.aws_iam_policy_document.ci_deploy: Read complete after 1s [id=566827550]
+module.iam_ci.aws_iam_policy.permissions_boundary: Refreshing state... [id=arn:aws:iam::<ACCOUNT_ID>:policy/damolak-jenkins-ci-boundary]
+module.ecr.aws_ecr_lifecycle_policy.this: Refreshing state... [id=damolak-api]
+module.iam_ci.aws_iam_user.jenkins_ci: Refreshing state... [id=damolak-jenkins-ci]
+module.iam_ci.aws_iam_user_policy_attachment.jenkins_ci: Refreshing state... [id=damolak-jenkins-ci/arn:aws:iam::<ACCOUNT_ID>:policy/damolak-jenkins-ci-boundary]
+
+No changes. Your infrastructure matches the configuration.
+
+Terraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.

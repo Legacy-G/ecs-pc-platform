@@ -1,0 +1,42 @@
+# Commit: 441515b
+# Generated: 2026-11-10T07:48:00Z
+# ECR Repository: damolak-api
+{
+    "imageDetails": [
+        {
+            "registryId": "<ACCOUNT_ID>",
+            "repositoryName": "damolak-api",
+            "imageDigest": "sha256:58835e0453b801e710895b6d6874ce1472a164743685e2aa28e21cb52070586d",
+            "imageSizeInBytes": 1700,
+            "imagePushedAt": "2026-11-10T08:42:21.562000+01:00",
+            "imageManifestMediaType": "application/vnd.oci.image.manifest.v1+json",
+            "artifactMediaType": "application/vnd.oci.image.config.v1+json",
+            "lastRecordedPullTime": "2026-11-10T08:45:49.487000+01:00",
+            "imageStatus": "ACTIVE"
+        },
+        {
+            "registryId": "<ACCOUNT_ID>",
+            "repositoryName": "damolak-api",
+            "imageDigest": "sha256:7f3d4a8ad3f78b85190fc190694813013cb5ce695bc8a75d1e4e9e18b4a6a805",
+            "imageSizeInBytes": 51028425,
+            "imagePushedAt": "2026-11-10T08:42:21.221000+01:00",
+            "imageManifestMediaType": "application/vnd.oci.image.manifest.v1+json",
+            "artifactMediaType": "application/vnd.oci.image.config.v1+json",
+            "lastRecordedPullTime": "2026-11-10T08:45:49.505000+01:00",
+            "imageStatus": "ACTIVE"
+        },
+        {
+            "registryId": "<ACCOUNT_ID>",
+            "repositoryName": "damolak-api",
+            "imageDigest": "sha256:d13386a51e0a0aec9de63205bceace24c3e7a3815dbd01936733ad5c7ec6ec92",
+            "imageTags": [
+                "441515b"
+            ],
+            "imageSizeInBytes": 51028425,
+            "imagePushedAt": "2026-11-10T08:42:22.256000+01:00",
+            "imageManifestMediaType": "application/vnd.oci.image.index.v1+json",
+            "lastRecordedPullTime": "2026-11-10T08:45:51.361000+01:00",
+            "imageStatus": "ACTIVE"
+        }
+    ]
+}

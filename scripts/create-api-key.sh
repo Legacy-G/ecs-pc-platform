@@ -3,6 +3,7 @@
 # AWS SSM Parameter Store as a SecureString without printing or echoing the value.
 set -euo pipefail
 
+export MSYS_NO_PATHCONV=1
 export AWS_PROFILE="${AWS_PROFILE:-damolak}"
 export AWS_REGION="${AWS_REGION:-eu-north-1}"
 export AWS_PAGER=""
@@ -47,11 +48,16 @@ if [[ "${PARAM_EXISTS}" == "true" && "${ROTATE_FLAG}" == "--rotate" ]]; then
   OVERWRITE_OPT="--overwrite"
 fi
 
+CLI_KEY_FILE="${TMP_KEY_FILE}"
+if command -v cygpath >/dev/null 2>&1; then
+  CLI_KEY_FILE="$(cygpath -m "${TMP_KEY_FILE}")"
+fi
+
 aws ssm put-parameter \
   --name "${PARAM_NAME}" \
   --description "API key secret for ${ENV_NAME} environment" \
   --type "SecureString" \
-  --value "file://${TMP_KEY_FILE}" \
+  --value "file://${CLI_KEY_FILE}" \
   --region "${AWS_REGION}" \
   ${OVERWRITE_OPT} >/dev/null
 
