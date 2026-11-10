@@ -1,0 +1,27 @@
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: damolak-jenkins
+    user: root
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false -Xmx512m -Djava.net.preferIPv4Stack=true"
+      CASC_JENKINS_CONFIG: "/var/jenkins_home/casc/jenkins.yaml"
+      JENKINS_ADMIN_ID: "${JENKINS_ADMIN_ID:-admin}"
+      JENKINS_ADMIN_PASSWORD: "${JENKINS_ADMIN_PASSWORD}"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+      SSM_API_KEY: "${SSM_API_KEY}"
+      AWS_DEFAULT_REGION: "eu-north-1"
+      AWS_REGION: "eu-north-1"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./jenkins.yaml:/var/jenkins_home/casc/jenkins.yaml:ro
+    restart: unless-stopped
+
+volumes:
+  jenkins_home:

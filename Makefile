@@ -8,10 +8,17 @@ AWS_REGION  ?= eu-north-1
 TF_ENV      ?= dev
 
 .PHONY: help up local-down bootstrap down nuke test lint scan prose cost-check evidence \
-        tf-fmt tf-validate tf-test tf-lint tf-docs plan apply destroy smoke diagrams
+        tf-fmt tf-validate tf-test tf-lint tf-docs plan apply destroy smoke diagrams \
+        jenkins-up jenkins-down
 
 help:
-	@echo "Targets: up local-down bootstrap down nuke test lint scan prose cost-check evidence tf-fmt tf-validate tf-test tf-lint tf-docs plan apply destroy smoke diagrams"
+	@echo "Targets: up local-down bootstrap down nuke test lint scan prose cost-check evidence tf-fmt tf-validate tf-test tf-lint tf-docs plan apply destroy smoke diagrams jenkins-up jenkins-down"
+
+jenkins-up:
+	docker compose --env-file ci/jenkins/.jenkins.env -f ci/jenkins/docker-compose.yml up --build -d
+
+jenkins-down:
+	docker compose --env-file ci/jenkins/.jenkins.env -f ci/jenkins/docker-compose.yml down
 
 up:
 	docker compose up --build -d

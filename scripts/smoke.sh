@@ -13,8 +13,8 @@ BASE_URL="${BASE_URL%/}"
 
 echo "Smoke testing ${BASE_URL} (expected_sha=${EXPECTED_SHA:-any})"
 
-API_KEY=""
-if [[ -n "${SSM_PARAM_NAME}" ]]; then
+API_KEY="${API_KEY:-}"
+if [[ -z "${API_KEY}" && -n "${SSM_PARAM_NAME}" ]]; then
   echo "Fetching API key from SSM parameter ${SSM_PARAM_NAME} without echoing..."
   export AWS_PROFILE="${AWS_PROFILE:-damolak}"
   export AWS_REGION="${AWS_REGION:-eu-north-1}"

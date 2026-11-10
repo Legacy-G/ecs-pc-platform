@@ -24,6 +24,9 @@ override.tf.json
 .env
 .env.*
 !.env.example
+*.jenkins.env
+.jenkins.env
+ci/jenkins/.jenkins.env
 *.pem
 *.key
 jenkins-ci-access-key*
