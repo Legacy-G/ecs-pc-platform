@@ -1,0 +1,25 @@
+# Incident Note: Stage 2 ALB Taint and Resolution
+# Date: 2026-11-10
+# Stack: infra/envs/dev
+# Target: module.alb.aws_lb.this
+
+1. Failure Summary:
+During Phase 3B Stage 2 execution (`terraform apply -target=module.alb`), the initial apply command encountered a client-side execution timeout while the Terraform AWS provider was polling for the Application Load Balancer (`damolak-dev-alb`) to reach the 'active' state. Because the creation call was interrupted during polling, Terraform marked `module.alb.aws_lb.this` as tainted in the local state.
+
+2. Diagnostic and Verification:
+Direct AWS CLI query confirmed that AWS had successfully provisioned the ALB without errors:
+- Name: damolak-dev-alb
+- State: active
+- DNS: damolak-dev-alb-980615940.eu-north-1.elb.amazonaws.com
+- Subnets: subnet-05dc42a65f8045df1, subnet-08a4714e44403b1f4
+
+3. Resolution:
+Rather than destroying and re-creating the active load balancer (which would cause downtime and churn public DNS records), the resource was untainted:
+  terraform -chdir=infra/envs/dev untaint module.alb.aws_lb.this
+Stage 2 was then completed by applying the dependent HTTP listener (`module.alb.aws_lb_listener.http`), which completed cleanly in 2 seconds.
+
+4. Duplicate and Orphaned Resource Audit:
+A full regional audit was executed via AWS CLI to verify no orphaned resources exist:
+- Load Balancers: Exactly 1 ALB exists (`damolak-dev-alb`). No other ALBs exist in eu-north-1.
+- Network Interfaces: Exactly 2 ENIs exist associated with the ALB description (`eni-0c923cf93b88d98b9` in eu-north-1a, `eni-04c84709d8efa33b9` in eu-north-1b).
+- Result: Zero duplicate or orphaned ALBs or ENIs remain.
