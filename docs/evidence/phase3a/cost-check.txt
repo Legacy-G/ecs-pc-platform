@@ -1,0 +1,35 @@
+# Commit: 441515b
+# Generated: 2026-11-10T07:48:00Z
+# Cost check
+== Account plan and remaining credits (us-east-1 endpoint) ==
+----------------------------------------------------------------------
+|                         GetAccountPlanState                        |
++------------+------------------------------------+-------+----------+
+| CreditsUSD |              Expires               | Plan  | Status   |
++------------+------------------------------------+-------+----------+
+|  119.97    |  2027-05-08T08:04:34.789000+00:00  |  FREE |  ACTIVE  |
++------------+------------------------------------+-------+----------+
+== Expected dev running cost in eu-north-1 (1 ALB + 2 ALB public IPs + 1 Fargate task + 1 task public IP) ==
+Rate: USD 0.0574/hr (~USD 1.38/day). Always destroy with 'make down' when not actively testing.
+
+[
+    {
+        "BlendedCost": {
+            "Amount": "0",
+            "Unit": "USD"
+        },
+        "UnblendedCost": {
+            "Amount": "0",
+            "Unit": "USD"
+        }
+    }
+]
+== Billable resource check in eu-north-1 ==
+ECS clusters : none
+ALBs         : none
+NAT gateways : none
+Elastic IPs  : none
+EC2 instances: none
+ECR repos    : damolak-api
+Log groups   : none
+cost-check: zero hourly-billed compute or network resources active in eu-north-1.

@@ -1,0 +1,9 @@
+# Commit: 441515b
+# Generated: 2026-11-10T07:48:00Z
+# SSM Parameter: /damolak/dev/api-key
+{
+    "Name": "/damolak/dev/api-key",
+    "Type": "SecureString",
+    "Version": 1,
+    "LastModifiedDate": "2026-11-10T08:25:01.817000+01:00"
+}
