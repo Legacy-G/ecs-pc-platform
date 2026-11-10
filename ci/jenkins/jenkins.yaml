@@ -1,0 +1,34 @@
+jenkins:
+  systemMessage: "damolak-jenkins controller: automated deployment pipeline"
+  numExecutors: 1
+  mode: NORMAL
+  scmCheckoutRetryCount: 2
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${JENKINS_ADMIN_ID:-admin}"
+          password: "${JENKINS_ADMIN_PASSWORD}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+unclassified:
+  location:
+    url: "http://127.0.0.1:8080/"
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - usernamePassword:
+              scope: GLOBAL
+              id: "aws-jenkins-ci"
+              description: "AWS credentials for damolak-jenkins-ci IAM user"
+              username: "${AWS_ACCESS_KEY_ID}"
+              password: "${AWS_SECRET_ACCESS_KEY}"
+          - string:
+              scope: GLOBAL
+              id: "ssm-api-key"
+              description: "API key for damolak API service"
+              secret: "${SSM_API_KEY}"
