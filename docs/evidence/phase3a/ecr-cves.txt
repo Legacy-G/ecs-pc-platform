@@ -1,0 +1,64 @@
+# Commit: 6d98569
+# Generated: 2026-11-10T08:50:00Z
+# ECR Repository: damolak-api
+# Scope: 9 HIGH Severity Vulnerabilities Identified by ECR Basic Scan
+
+1. CVE-2026-119374
+   - Package: sqlite3
+   - Installed Version: 3.40.1-2+deb12u2
+   - Debian Tracker: https://security-tracker.debian.org/tracker/CVE-2026-119374
+   - Status: Vulnerable in Debian 12 (bookworm). No backported patch released upstream by Debian security team.
+
+2. CVE-2026-119379
+   - Package: sqlite3
+   - Installed Version: 3.40.1-2+deb12u2
+   - Debian Tracker: https://security-tracker.debian.org/tracker/CVE-2026-119379
+   - Status: Vulnerable in Debian 12 (bookworm). No backported patch released upstream by Debian security team.
+
+3. CVE-2026-85091
+   - Package: zlib
+   - Installed Version: 1.2.13.dfsg-1
+   - Debian Tracker: https://security-tracker.debian.org/tracker/CVE-2026-85091
+   - Status: Vulnerable in Debian 12 (bookworm). No backported patch released upstream by Debian security team.
+
+4. CVE-2026-53613
+   - Package: util-linux
+   - Installed Version: 2.38.1-5+deb12u3
+   - Debian Tracker: https://security-tracker.debian.org/tracker/CVE-2026-53613
+   - Status: Vulnerable in Debian 12 (bookworm). Fixed in 2.41.5/2.42.2 upstream; no backported patch released in Debian 12.
+
+5. CVE-2026-76844
+   - Package: zlib
+   - Installed Version: 1.2.13.dfsg-1
+   - Debian Tracker: https://security-tracker.debian.org/tracker/CVE-2026-76844
+   - Status: Vulnerable in Debian 12 (bookworm). No backported patch released upstream by Debian security team.
+
+6. CVE-2026-53615
+   - Package: util-linux
+   - Installed Version: 2.38.1-5+deb12u3
+   - Debian Tracker: https://security-tracker.debian.org/tracker/CVE-2026-53615
+   - Status: Vulnerable in Debian 12 (bookworm). Fixed in 2.41.4 upstream; no backported patch released in Debian 12.
+
+7. CVE-2026-78410
+   - Package: util-linux
+   - Installed Version: 2.38.1-5+deb12u3
+   - Debian Tracker: https://security-tracker.debian.org/tracker/CVE-2026-78410
+   - Status: Vulnerable in Debian 12 (bookworm). No backported patch released upstream by Debian security team.
+
+8. CVE-2026-84243
+   - Package: glibc
+   - Installed Version: 2.36-9+deb12u14
+   - Debian Tracker: https://security-tracker.debian.org/tracker/CVE-2026-84243
+   - Status: Vulnerable in Debian 12 (bookworm). No backported patch released upstream by Debian security team.
+
+9. CVE-2026-119373
+   - Package: sqlite3
+   - Installed Version: 3.40.1-2+deb12u2
+   - Debian Tracker: https://security-tracker.debian.org/tracker/CVE-2026-119373
+   - Status: Vulnerable in Debian 12 (bookworm). No backported patch released upstream by Debian security team.
+
+Summary:
+- Total HIGH vulnerabilities: 9
+- Total CRITICAL vulnerabilities: 0
+- Origin: All 9 reside within base operating system packages (sqlite3, zlib, util-linux, glibc) in Debian 12 Bookworm.
+- Triage: None currently have vendor fixes available in Debian 12 repositories. Trivy image scan using `--ignore-unfixed` reports 0 vulnerabilities.

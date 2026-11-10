@@ -31,7 +31,27 @@ for ((attempt = 1; attempt <= MAX_ATTEMPTS; attempt++)); do
       if [[ -z "$EXPECTED_SHA" ]] || echo "$info_json" | grep -q "\"git_sha\":\"${EXPECTED_SHA}\""; then
         if echo "$status_html" | grep -q "Runtime Telemetry"; then
           if [[ -n "$API_KEY" ]]; then
-            echo "Testing authenticated POST /api/v1/echo/ using SSM key..."
+            echo "Testing unauthenticated request (missing key -> expect 401)..."
+            missing_code="$(curl -s -o /dev/null -w "%{http_code}" -X POST "${BASE_URL}/api/v1/echo/" \
+              -H "Content-Type: application/json" \
+              -d '{"message":"no-key"}' || true)"
+            if [[ "$missing_code" != "401" ]]; then
+              echo "Expected HTTP 401 for missing API key, got ${missing_code}" >&2
+              exit 1
+            fi
+
+            echo "Testing invalid request (wrong key -> expect 401)..."
+            INVALID_KEY="invalid-key"
+            wrong_code="$(curl -s -o /dev/null -w "%{http_code}" -X POST "${BASE_URL}/api/v1/echo/" \
+              -H "Content-Type: application/json" \
+              -H "X-API-Key: ${INVALID_KEY}" \
+              -d '{"message":"wrong-key"}' || true)"
+            if [[ "$wrong_code" != "401" ]]; then
+              echo "Expected HTTP 401 for wrong API key, got ${wrong_code}" >&2
+              exit 1
+            fi
+
+            echo "Testing authenticated POST /api/v1/echo/ using SSM key (expect 200)..."
             echo_resp="$(curl -fsS -X POST "${BASE_URL}/api/v1/echo/" \
               -H "Content-Type: application/json" \
               -H "X-API-Key: ${API_KEY}" \
@@ -41,6 +61,14 @@ for ((attempt = 1; attempt <= MAX_ATTEMPTS; attempt++)); do
               exit 1
             fi
             echo "echo  : verified authenticated response"
+
+            echo "Testing unknown route (expect 404)..."
+            not_found_code="$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/nonexistent" || true)"
+            if [[ "$not_found_code" != "404" ]]; then
+              echo "Expected HTTP 404 for nonexistent route, got ${not_found_code}" >&2
+              exit 1
+            fi
+            echo "route : verified 404 on nonexistent path"
           fi
           echo "smoke-test: PASS on attempt ${attempt}/${MAX_ATTEMPTS}"
           echo "health: ${health_json}"

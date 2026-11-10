@@ -18,6 +18,10 @@ Stateless FastAPI service built on Python 3.13 (`uvicorn` single-worker runtime)
    - Uvicorn runs with `--proxy-headers` and `--forwarded-allow-ips "${FORWARDED_ALLOW_IPS}"` (set to the VPC CIDR in ECS and `127.0.0.1` locally).
    - `TrustedHostMiddleware` is intentionally omitted because ALB target group health checks send the task's private IPv4 address in the `Host` header.
 2. **Graceful `SIGTERM` Shutdown:**
-   - Uvicorn runs as PID 1 (`exec` form in `Dockerfile`) with `--timeout-graceful-shutdown 20`, paired with ECS `stopTimeout = 30s` and ALB `deregistration_delay = 25s`.
+   - Uvicorn runs as PID 1 (`exec` form in `Dockerfile`) with `--timeout-graceful-shutdown 20`, paired with ECS `stopTimeout = 30s` and ALB `deregistration_delay = 30s`.
 3. **Container Health Check Start Period:**
    - The `Dockerfile` `HEALTHCHECK` sets `--start-period=20s` and calls `http://127.0.0.1:8000/api/v1/health/` using Python's standard library `urllib.request`, avoiding extra OS packages such as `curl`.
+
+## Security and Vulnerability Posture
+
+ECR basic scan reports 9 HIGH severity vulnerabilities originating in base Debian 12 (bookworm) operating system packages (`sqlite3`, `zlib`, `util-linux`, `glibc`). None currently have patches available upstream from the Debian security team. Trivy image scanning with `--ignore-unfixed` reports 0 vulnerabilities. Base container images and dependencies are rebuilt and updated weekly through Dependabot.

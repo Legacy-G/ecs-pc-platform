@@ -96,6 +96,8 @@ jobs:
       - name: Build API container image
         run: |
           docker build \
+            --provenance=false \
+            --sbom=false \
             --build-arg APP_VERSION=0.1.0 \
             --build-arg "GIT_SHA=${GITHUB_SHA}" \
             -t "damolak-api:${GITHUB_SHA}" \
