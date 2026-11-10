@@ -50,6 +50,11 @@ run "valid_fargate_service_plan" {
   }
 
   assert {
+    condition     = aws_lb_target_group.this.deregistration_delay == "30"
+    error_message = "Target group deregistration delay must be 30 seconds."
+  }
+
+  assert {
     condition     = aws_lb_listener_rule.this.priority == 100
     error_message = "Listener rule must use the priority passed in."
   }
