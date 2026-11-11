@@ -20,7 +20,6 @@ pipeline {
         ECR_REPOSITORY     = 'damolak-api'
         TF_DIR             = 'infra/envs/dev'
         DEPLOYED_URL       = ''
-        ACCOUNT_ID         = ''
     }
 
     stages {
@@ -74,18 +73,14 @@ pipeline {
                     usernameVariable: 'AWS_ACCESS_KEY_ID',
                     passwordVariable: 'AWS_SECRET_ACCESS_KEY'
                 )]) {
-                    script {
-                        env.ACCOUNT_ID = sh(
-                            returnStdout: true,
-                            script: 'aws sts get-caller-identity --query Account --output text'
-                        ).trim()
-                    }
-                    sh """
-                        REGISTRY="${env.ACCOUNT_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
-                        aws ecr get-login-password --region ${env.AWS_REGION} | docker login --username AWS --password-stdin "\${REGISTRY}"
-                        docker tag ${env.ECR_REPOSITORY}:${env.GIT_SHA} "\${REGISTRY}/${env.ECR_REPOSITORY}:${env.GIT_SHA}"
-                        docker push "\${REGISTRY}/${env.ECR_REPOSITORY}:${env.GIT_SHA}"
-                    """
+                    sh '''
+                        ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+                        echo "${ACCOUNT_ID}" > /tmp/account_id.txt
+                        REGISTRY="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+                        aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin "${REGISTRY}"
+                        docker tag "${ECR_REPOSITORY}:${GIT_SHA}" "${REGISTRY}/${ECR_REPOSITORY}:${GIT_SHA}"
+                        docker push "${REGISTRY}/${ECR_REPOSITORY}:${GIT_SHA}"
+                    '''
                 }
             }
         }
@@ -97,22 +92,23 @@ pipeline {
                     usernameVariable: 'AWS_ACCESS_KEY_ID',
                     passwordVariable: 'AWS_SECRET_ACCESS_KEY'
                 )]) {
-                    sh """
-                        terraform fmt -check -recursive infra
-                        cat > ${env.TF_DIR}/backend.hcl <<EOF
-bucket       = "damolak-tfstate-${env.ACCOUNT_ID}-${env.AWS_REGION}"
+                    sh '''
+                        ACCOUNT_ID=$(cat /tmp/account_id.txt 2>/dev/null || aws sts get-caller-identity --query "Account" --output text)
+                        cat > ${TF_DIR}/backend.hcl <<EOF
+bucket       = "damolak-tfstate-${ACCOUNT_ID}-${AWS_REGION}"
 key          = "dev/terraform.tfstate"
-region       = "${env.AWS_REGION}"
+region       = "${AWS_REGION}"
 encrypt      = true
 use_lockfile = true
 EOF
-                        terraform -chdir=${env.TF_DIR} init -backend-config=backend.hcl -input=false
-                        terraform -chdir=${env.TF_DIR} validate
-                        terraform -chdir=${env.TF_DIR} plan -input=false \\
-                          -var="image_tag=${env.GIT_SHA}" \\
-                          -var="git_sha=${env.GIT_SHA}" \\
+                        terraform fmt -check -recursive infra
+                        terraform -chdir="${TF_DIR}" init -backend-config=backend.hcl -input=false
+                        terraform -chdir="${TF_DIR}" validate
+                        terraform -chdir="${TF_DIR}" plan -input=false \
+                          -var="image_tag=${GIT_SHA}" \
+                          -var="git_sha=${GIT_SHA}" \
                           -out=jenkins.tfplan
-                    """
+                    '''
                 }
             }
         }
@@ -127,10 +123,10 @@ EOF
                     usernameVariable: 'AWS_ACCESS_KEY_ID',
                     passwordVariable: 'AWS_SECRET_ACCESS_KEY'
                 )]) {
-                    sh """
-                        terraform -chdir=${env.TF_DIR} apply -input=false jenkins.tfplan
-                        rm -f ${env.TF_DIR}/jenkins.tfplan
-                    """
+                    sh '''
+                        terraform -chdir="${TF_DIR}" apply -input=false jenkins.tfplan
+                        rm -f "${TF_DIR}/jenkins.tfplan"
+                    '''
                 }
             }
         }
@@ -151,13 +147,11 @@ EOF
                         variable: 'API_KEY'
                     )
                 ]) {
-                    script {
-                        env.DEPLOYED_URL = sh(returnStdout: true, script: "terraform -chdir=${env.TF_DIR} output -raw service_url").trim()
-                    }
-                    sh """
-                        echo "Running smoke test against ALB URL: ${env.DEPLOYED_URL}"
-                        bash scripts/smoke.sh "${env.DEPLOYED_URL}" "${env.GIT_SHA}"
-                    """
+                    sh '''
+                        DEPLOYED_URL=$(terraform -chdir="${TF_DIR}" output -raw service_url)
+                        echo "Running smoke test against ALB URL: ${DEPLOYED_URL}"
+                        bash scripts/smoke.sh "${DEPLOYED_URL}" "${GIT_SHA}"
+                    '''
                 }
             }
         }
