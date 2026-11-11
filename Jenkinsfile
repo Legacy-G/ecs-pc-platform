@@ -13,13 +13,14 @@ pipeline {
     }
 
     environment {
-        AWS_DEFAULT_REGION = 'eu-north-1'
-        AWS_REGION         = 'eu-north-1'
-        AWS_MAX_ATTEMPTS   = '5'
-        AWS_RETRY_MODE     = 'standard'
-        ECR_REPOSITORY     = 'damolak-api'
-        TF_DIR             = 'infra/envs/dev'
-        DEPLOYED_URL       = ''
+        AWS_DEFAULT_REGION  = 'eu-north-1'
+        AWS_REGION          = 'eu-north-1'
+        AWS_MAX_ATTEMPTS    = '5'
+        AWS_RETRY_MODE      = 'standard'
+        TF_PLUGIN_CACHE_DIR = '/var/jenkins_home/.terraform.d/plugin-cache'
+        ECR_REPOSITORY      = 'damolak-api'
+        TF_DIR              = 'infra/envs/dev'
+        DEPLOYED_URL        = ''
     }
 
     stages {
