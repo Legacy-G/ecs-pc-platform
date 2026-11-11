@@ -138,7 +138,7 @@ EOF
 
                         INIT_OK=false
                         for i in 1 2 3 4 5; do
-                            if terraform -chdir="${TF_DIR}" init -backend-config=backend.hcl -input=false; then
+                            if terraform -chdir="${TF_DIR}" init -plugin-dir=/var/jenkins_home/.terraform.d/plugins -backend-config=backend.hcl -input=false; then
                                 INIT_OK=true
                                 break
                             fi
