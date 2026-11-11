@@ -169,7 +169,10 @@ EOF
 
         stage('Apply plan') {
             when {
-                branch 'main'
+                anyOf {
+                    branch 'main'
+                    expression { return (env.BRANCH_NAME == null || env.BRANCH_NAME == 'main' || env.GIT_BRANCH?.endsWith('main')) }
+                }
             }
             steps {
                 withCredentials([usernamePassword(
@@ -196,7 +199,10 @@ EOF
 
         stage('ALB Smoke Test') {
             when {
-                branch 'main'
+                anyOf {
+                    branch 'main'
+                    expression { return (env.BRANCH_NAME == null || env.BRANCH_NAME == 'main' || env.GIT_BRANCH?.endsWith('main')) }
+                }
             }
             steps {
                 withCredentials([
@@ -211,11 +217,21 @@ EOF
                     )
                 ]) {
                     script {
-                        env.DEPLOYED_URL = sh(returnStdout: true, script: "terraform -chdir=${env.TF_DIR} output -raw service_url").trim()
+                        env.DEPLOYED_URL = sh(
+                            returnStdout: true,
+                            script: '''
+                                for i in 1 2 3; do
+                                    URL=$(terraform -chdir="${TF_DIR}" output -raw service_url 2>/dev/null || true)
+                                    [ -n "${URL}" ] && echo "${URL}" && exit 0
+                                    sleep 2
+                                done
+                                exit 1
+                            '''
+                        ).trim()
                     }
                     sh '''
                         echo "Running smoke test against ALB URL: ${DEPLOYED_URL}"
-                        bash scripts/smoke.sh "${DEPLOYED_URL}" "${GIT_SHA}"
+                        SMOKE_MAX_ATTEMPTS=40 SMOKE_SLEEP_SECONDS=10 bash scripts/smoke.sh "${DEPLOYED_URL}" "${GIT_SHA}"
                     '''
                 }
             }
