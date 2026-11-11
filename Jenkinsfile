@@ -150,7 +150,7 @@ pipeline {
     post {
         always {
             archiveArtifacts artifacts: 'test-results.xml', allowEmptyArchive: true
-            cleanWs deleteDirs: true, notFailBuild: true
+            deleteDir()
         }
         success {
             script {

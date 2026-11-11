@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     app_name: str = Field(default="damolak-api", min_length=1)
     app_env: str = Field(default="local", min_length=1)
-    app_version: str = Field(default="0.1.0", min_length=1)
+    app_version: str = Field(default="0.1.1", min_length=1)
     git_sha: str = Field(default="local-dev", min_length=1)
     aws_region: str = Field(default="eu-north-1", min_length=1)
     log_level: str = Field(default="INFO", pattern=r"^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$")
