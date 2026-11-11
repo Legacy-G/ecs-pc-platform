@@ -1,0 +1,13 @@
+# Commit: b65579d
+# Generated: 2026-11-11T23:28:40Z
+# Live Smoke Test: Dev ALB endpoint verified by Jenkins unattended deployment
+Smoke testing http://damolak-dev-alb-980615940.eu-north-1.elb.amazonaws.com (expected_sha=b65579d)
+Testing unauthenticated request (missing key -> expect 401)...
+Testing invalid request (wrong key -> expect 401)...
+Testing authenticated POST /api/v1/echo/ using SSM key (expect 200)...
+echo  : verified authenticated response
+Testing unknown route (expect 404)...
+route : verified 404 on nonexistent path
+smoke-test: PASS on attempt 1/40
+health: {"status":"ok","checks":{"config":"ok","metadata":"ok"}}
+info  : {"service":"damolak-api","version":"0.1.1","git_sha":"b65579d","environment":"dev","aws_region":"eu-north-1","task_id":"e1a3c92164284bae9ee0d4e4c66eed3f","availability_zone":"eu-north-1a","started_at":"2026-11-11T23:19:48.543140Z","uptime_seconds":131.65}
