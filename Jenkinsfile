@@ -15,9 +15,12 @@ pipeline {
     environment {
         AWS_DEFAULT_REGION = 'eu-north-1'
         AWS_REGION         = 'eu-north-1'
+        AWS_MAX_ATTEMPTS   = '5'
+        AWS_RETRY_MODE     = 'standard'
         ECR_REPOSITORY     = 'damolak-api'
         TF_DIR             = 'infra/envs/dev'
         DEPLOYED_URL       = ''
+        ACCOUNT_ID         = ''
     }
 
     stages {
@@ -71,9 +74,14 @@ pipeline {
                     usernameVariable: 'AWS_ACCESS_KEY_ID',
                     passwordVariable: 'AWS_SECRET_ACCESS_KEY'
                 )]) {
+                    script {
+                        env.ACCOUNT_ID = sh(
+                            returnStdout: true,
+                            script: 'aws sts get-caller-identity --query Account --output text'
+                        ).trim()
+                    }
                     sh """
-                        ACCOUNT_ID=\$(aws sts get-caller-identity --query "Account" --output text)
-                        REGISTRY="\${ACCOUNT_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
+                        REGISTRY="${env.ACCOUNT_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
                         aws ecr get-login-password --region ${env.AWS_REGION} | docker login --username AWS --password-stdin "\${REGISTRY}"
                         docker tag ${env.ECR_REPOSITORY}:${env.GIT_SHA} "\${REGISTRY}/${env.ECR_REPOSITORY}:${env.GIT_SHA}"
                         docker push "\${REGISTRY}/${env.ECR_REPOSITORY}:${env.GIT_SHA}"
@@ -91,9 +99,8 @@ pipeline {
                 )]) {
                     sh """
                         terraform fmt -check -recursive infra
-                        ACCOUNT_ID=\$(aws sts get-caller-identity --query "Account" --output text)
                         cat > ${env.TF_DIR}/backend.hcl <<EOF
-bucket       = "damolak-tfstate-\${ACCOUNT_ID}-${env.AWS_REGION}"
+bucket       = "damolak-tfstate-${env.ACCOUNT_ID}-${env.AWS_REGION}"
 key          = "dev/terraform.tfstate"
 region       = "${env.AWS_REGION}"
 encrypt      = true
