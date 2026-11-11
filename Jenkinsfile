@@ -91,11 +91,19 @@ pipeline {
                 )]) {
                     sh """
                         terraform fmt -check -recursive infra
-                        terraform -chdir=${env.TF_DIR} init -input=false
+                        ACCOUNT_ID=\$(aws sts get-caller-identity --query "Account" --output text)
+                        cat > ${env.TF_DIR}/backend.hcl <<EOF
+bucket       = "damolak-tfstate-\${ACCOUNT_ID}-${env.AWS_REGION}"
+key          = "dev/terraform.tfstate"
+region       = "${env.AWS_REGION}"
+encrypt      = true
+use_lockfile = true
+EOF
+                        terraform -chdir=${env.TF_DIR} init -backend-config=backend.hcl -input=false
                         terraform -chdir=${env.TF_DIR} validate
-                        terraform -chdir=${env.TF_DIR} plan -input=false \
-                          -var="image_tag=${env.GIT_SHA}" \
-                          -var="git_sha=${env.GIT_SHA}" \
+                        terraform -chdir=${env.TF_DIR} plan -input=false \\
+                          -var="image_tag=${env.GIT_SHA}" \\
+                          -var="git_sha=${env.GIT_SHA}" \\
                           -out=jenkins.tfplan
                     """
                 }
