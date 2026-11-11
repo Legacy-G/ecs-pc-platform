@@ -87,9 +87,25 @@ pipeline {
                         fi
                         echo "${ACCOUNT_ID}" > /tmp/account_id.txt
                         REGISTRY="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-                        aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin "${REGISTRY}"
+                        LOGGED_IN=false
+                        for i in 1 2 3 4 5; do
+                            LOGIN_PASS=$(aws ecr get-login-password --region "${AWS_REGION}" 2>/dev/null || true)
+                            if [ -n "${LOGIN_PASS}" ]; then
+                                if echo "${LOGIN_PASS}" | docker login --username AWS --password-stdin "${REGISTRY}"; then
+                                    LOGGED_IN=true
+                                    break
+                                fi
+                            fi
+                            sleep 3
+                        done
+                        if [ "${LOGGED_IN}" != "true" ]; then
+                            echo "ERROR: Failed to authenticate to ECR registry" >&2
+                            exit 1
+                        fi
                         docker tag "${ECR_REPOSITORY}:${GIT_SHA}" "${REGISTRY}/${ECR_REPOSITORY}:${GIT_SHA}"
-                        docker push "${REGISTRY}/${ECR_REPOSITORY}:${GIT_SHA}"
+                        for i in 1 2 3; do
+                            docker push "${REGISTRY}/${ECR_REPOSITORY}:${GIT_SHA}" && break || sleep 3
+                        done
                     '''
                 }
             }
