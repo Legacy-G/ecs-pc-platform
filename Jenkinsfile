@@ -217,23 +217,20 @@ EOF
                         variable: 'API_KEY'
                     )
                 ]) {
-                    script {
-                        env.DEPLOYED_URL = sh(
-                            returnStdout: true,
-                            script: '''
-                                for i in 1 2 3; do
-                                    URL=$(terraform -chdir="${TF_DIR}" output -raw service_url 2>/dev/null || true)
-                                    [ -n "${URL}" ] && echo "${URL}" && exit 0
-                                    sleep 2
-                                done
-                                exit 1
-                            '''
-                        ).trim()
-                    }
-                    sh """
-                        echo "Running smoke test against ALB URL: ${env.DEPLOYED_URL}"
-                        SMOKE_MAX_ATTEMPTS=40 SMOKE_SLEEP_SECONDS=10 bash scripts/smoke.sh "${env.DEPLOYED_URL}" "${env.GIT_SHA}"
-                    """
+                    sh '''
+                        ALB_URL=""
+                        for i in 1 2 3 4 5; do
+                            ALB_URL=$(terraform -chdir="${TF_DIR}" output -raw service_url 2>/dev/null || true)
+                            [ -n "${ALB_URL}" ] && break || sleep 2
+                        done
+                        if [ -z "${ALB_URL}" ]; then
+                            echo "Failed to retrieve service_url from Terraform output" >&2
+                            exit 1
+                        fi
+                        echo "${ALB_URL}" > /tmp/deployed_url.txt
+                        echo "Running smoke test against ALB URL: ${ALB_URL}"
+                        SMOKE_MAX_ATTEMPTS=40 SMOKE_SLEEP_SECONDS=10 bash scripts/smoke.sh "${ALB_URL}" "${GIT_SHA}"
+                    '''
                 }
             }
         }
@@ -246,9 +243,10 @@ EOF
         }
         success {
             script {
+                def deployedUrl = sh(returnStdout: true, script: 'cat /tmp/deployed_url.txt 2>/dev/null || true').trim()
                 echo "==========================================================="
                 echo "Deployment Successful!"
-                echo "Deployed URL: ${env.DEPLOYED_URL}"
+                echo "Deployed URL: ${deployedUrl}"
                 echo "Deployed SHA: ${env.GIT_SHA}"
                 echo "==========================================================="
             }
