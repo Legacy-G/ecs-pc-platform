@@ -45,7 +45,7 @@ pipeline {
 
         stage('Build Container Image') {
             steps {
-                sh "docker build --provenance=false --sbom=false -t ${env.ECR_REPOSITORY}:${env.GIT_SHA} services/api"
+                sh "docker build --provenance=false --sbom=false --load -t ${env.ECR_REPOSITORY}:${env.GIT_SHA} services/api"
             }
         }
 
