@@ -135,12 +135,33 @@ encrypt      = true
 use_lockfile = true
 EOF
                         terraform fmt -check -recursive infra
-                        terraform -chdir="${TF_DIR}" init -backend-config=backend.hcl -input=false
+
+                        INIT_OK=false
+                        for i in 1 2 3 4 5; do
+                            if terraform -chdir="${TF_DIR}" init -backend-config=backend.hcl -input=false; then
+                                INIT_OK=true
+                                break
+                            fi
+                            echo "Terraform init attempt $i failed, retrying in 3s..."
+                            sleep 3
+                        done
+                        [ "${INIT_OK}" = "true" ] || exit 1
+
                         terraform -chdir="${TF_DIR}" validate
-                        terraform -chdir="${TF_DIR}" plan -input=false \
-                          -var="image_tag=${GIT_SHA}" \
-                          -var="git_sha=${GIT_SHA}" \
-                          -out=jenkins.tfplan
+
+                        PLAN_OK=false
+                        for i in 1 2 3 4 5; do
+                            if terraform -chdir="${TF_DIR}" plan -input=false \
+                              -var="image_tag=${GIT_SHA}" \
+                              -var="git_sha=${GIT_SHA}" \
+                              -out=jenkins.tfplan; then
+                                PLAN_OK=true
+                                break
+                            fi
+                            echo "Terraform plan attempt $i failed, retrying in 3s..."
+                            sleep 3
+                        done
+                        [ "${PLAN_OK}" = "true" ] || exit 1
                     '''
                 }
             }
@@ -157,7 +178,16 @@ EOF
                     passwordVariable: 'AWS_SECRET_ACCESS_KEY'
                 )]) {
                     sh '''
-                        terraform -chdir="${TF_DIR}" apply -input=false jenkins.tfplan
+                        APPLY_OK=false
+                        for i in 1 2 3 4 5; do
+                            if terraform -chdir="${TF_DIR}" apply -input=false jenkins.tfplan; then
+                                APPLY_OK=true
+                                break
+                            fi
+                            echo "Terraform apply attempt $i failed, retrying in 5s..."
+                            sleep 5
+                        done
+                        [ "${APPLY_OK}" = "true" ] || exit 1
                         rm -f "${TF_DIR}/jenkins.tfplan"
                     '''
                 }
