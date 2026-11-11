@@ -154,6 +154,7 @@ EOF
                             if terraform -chdir="${TF_DIR}" plan -input=false \
                               -var="image_tag=${GIT_SHA}" \
                               -var="git_sha=${GIT_SHA}" \
+                              -var="app_version=0.1.1" \
                               -out=jenkins.tfplan; then
                                 PLAN_OK=true
                                 break
@@ -229,10 +230,10 @@ EOF
                             '''
                         ).trim()
                     }
-                    sh '''
-                        echo "Running smoke test against ALB URL: ${DEPLOYED_URL}"
-                        SMOKE_MAX_ATTEMPTS=40 SMOKE_SLEEP_SECONDS=10 bash scripts/smoke.sh "${DEPLOYED_URL}" "${GIT_SHA}"
-                    '''
+                    sh """
+                        echo "Running smoke test against ALB URL: ${env.DEPLOYED_URL}"
+                        SMOKE_MAX_ATTEMPTS=40 SMOKE_SLEEP_SECONDS=10 bash scripts/smoke.sh "${env.DEPLOYED_URL}" "${env.GIT_SHA}"
+                    """
                 }
             }
         }

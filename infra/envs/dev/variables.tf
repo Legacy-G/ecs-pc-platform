@@ -30,7 +30,7 @@ variable "image_tag" {
 variable "app_version" {
   description = "Semantic application version string."
   type        = string
-  default     = "0.1.0"
+  default     = "0.1.1"
 }
 
 variable "git_sha" {
