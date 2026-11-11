@@ -74,7 +74,17 @@ pipeline {
                     passwordVariable: 'AWS_SECRET_ACCESS_KEY'
                 )]) {
                     sh '''
-                        ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+                        ACCOUNT_ID=$(cat /tmp/account_id.txt 2>/dev/null || true)
+                        if [ -z "${ACCOUNT_ID}" ]; then
+                            for i in 1 2 3 4 5; do
+                                ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text 2>/dev/null || true)
+                                [ -n "${ACCOUNT_ID}" ] && break || sleep 2
+                            done
+                        fi
+                        if [ -z "${ACCOUNT_ID}" ]; then
+                            echo "ERROR: Failed to retrieve AWS Account ID" >&2
+                            exit 1
+                        fi
                         echo "${ACCOUNT_ID}" > /tmp/account_id.txt
                         REGISTRY="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
                         aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin "${REGISTRY}"
@@ -93,7 +103,13 @@ pipeline {
                     passwordVariable: 'AWS_SECRET_ACCESS_KEY'
                 )]) {
                     sh '''
-                        ACCOUNT_ID=$(cat /tmp/account_id.txt 2>/dev/null || aws sts get-caller-identity --query "Account" --output text)
+                        ACCOUNT_ID=$(cat /tmp/account_id.txt 2>/dev/null || true)
+                        if [ -z "${ACCOUNT_ID}" ]; then
+                            for i in 1 2 3 4 5; do
+                                ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text 2>/dev/null || true)
+                                [ -n "${ACCOUNT_ID}" ] && break || sleep 2
+                            done
+                        fi
                         cat > ${TF_DIR}/backend.hcl <<EOF
 bucket       = "damolak-tfstate-${ACCOUNT_ID}-${AWS_REGION}"
 key          = "dev/terraform.tfstate"
@@ -147,8 +163,10 @@ EOF
                         variable: 'API_KEY'
                     )
                 ]) {
+                    script {
+                        env.DEPLOYED_URL = sh(returnStdout: true, script: "terraform -chdir=${env.TF_DIR} output -raw service_url").trim()
+                    }
                     sh '''
-                        DEPLOYED_URL=$(terraform -chdir="${TF_DIR}" output -raw service_url)
                         echo "Running smoke test against ALB URL: ${DEPLOYED_URL}"
                         bash scripts/smoke.sh "${DEPLOYED_URL}" "${GIT_SHA}"
                     '''
