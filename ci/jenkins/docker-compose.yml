@@ -6,7 +6,7 @@ services:
     container_name: damolak-jenkins
     user: root
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8088:8080"
     environment:
       JAVA_OPTS: "-Djenkins.install.runSetupWizard=false -Xmx512m -Djava.net.preferIPv4Stack=true"
       CASC_JENKINS_CONFIG: "/var/jenkins_home/casc/jenkins.yaml"

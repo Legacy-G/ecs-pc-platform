@@ -37,7 +37,7 @@ RUN curl -fsSL "https://releases.hashicorp.com/terraform/1.17.0/terraform_1.17.0
 
 # Create python venv for pytest and install dependencies
 RUN python3 -m venv /opt/venv && \
-    /opt/venv/bin/pip install --no-cache-dir pytest httpx pydantic fastapi uvicorn && \
+    /opt/venv/bin/pip install --no-cache-dir pytest pytest-cov httpx pydantic pydantic-settings jinja2 uvicorn fastapi python-dotenv && \
     ln -s /opt/venv/bin/pytest /usr/local/bin/pytest
 
 # Set up init script for Jenkins pipeline job
