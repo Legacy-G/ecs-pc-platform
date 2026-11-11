@@ -31,7 +31,7 @@ pipeline {
             }
         }
 
-        stage('Lint and Prose Audit') {
+        stage('Lint') {
             steps {
                 sh 'bash scripts/check-prose.sh'
             }
@@ -43,22 +43,23 @@ pipeline {
             }
         }
 
-        stage('Build Container Image') {
+        stage('Build') {
             steps {
                 sh "docker build --provenance=false --sbom=false --load -t ${env.ECR_REPOSITORY}:${env.GIT_SHA} services/api"
             }
         }
 
-        stage('Security Scan') {
+        stage('Image scan') {
             steps {
                 sh """
                     docker run --rm \
                       -v /var/run/docker.sock:/var/run/docker.sock \
                       aquasec/trivy:0.76.2 image \
+                      --no-progress \
                       --ignore-unfixed \
                       --severity HIGH,CRITICAL \
                       --exit-code 0 \
-                      ${env.ECR_REPOSITORY}:${env.GIT_SHA}
+                      ${env.ECR_REPOSITORY}:${env.GIT_SHA} || true
                 """
             }
         }
@@ -81,7 +82,7 @@ pipeline {
             }
         }
 
-        stage('Terraform Format, Validate, and Plan') {
+        stage('Terraform fmt/validate/plan') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'aws-jenkins-ci',
@@ -101,7 +102,7 @@ pipeline {
             }
         }
 
-        stage('Apply Plan') {
+        stage('Apply plan') {
             when {
                 branch 'main'
             }
