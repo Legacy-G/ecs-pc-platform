@@ -1,0 +1,18 @@
+# Commit: b65579d
+# Generated: 2026-11-11T23:28:15Z
+# Pipeline Stage Timings: Build #24 (SUCCESS, Total Duration: 505.3s)
+Stage                            Status     Duration (s)
+--------------------------------------------------------
+Declarative: Checkout SCM        SUCCESS           8.5s
+Checkout                         SUCCESS           8.4s
+Lint                             SUCCESS           2.7s
+Unit Tests                       SUCCESS           5.5s
+Build                            SUCCESS          29.1s
+Image scan                       SUCCESS          31.7s
+Push to ECR                      SUCCESS          40.6s
+Terraform fmt/validate/plan      SUCCESS          82.7s
+Apply plan                       SUCCESS         180.4s
+ALB Smoke Test                   SUCCESS          60.6s
+Declarative: Post Actions        SUCCESS          10.6s
+--------------------------------------------------------
+Total Run Time: 505.3s (8m 25s)
