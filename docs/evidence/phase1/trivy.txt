@@ -1,5 +1,5 @@
 # Evidence: trivy container vulnerability and secret scan
-# Commit: 9f2d576048bd548fb2bebc1a2d750a1ce86aa0a9
-# Timestamp (UTC): 2026-11-09T21:26:31Z
+# Commit: 927b279246ee75026c176b2410148884179fb131
+# Timestamp (UTC): 2026-11-12T02:15:33Z
 
-2026-11-09T21:26:59Z	FATAL	Fatal error	flag error: unable to convert flags to options: ignore file not found: C:/Program Files/Git/work/.trivyignore
+2026-11-12T02:17:01Z	FATAL	Fatal error	flag error: unable to convert flags to options: ignore file not found: C:/Program Files/Git/work/.trivyignore
