@@ -38,7 +38,7 @@ docker compose down
 Execute pre-commit audits, prose validation, unit tests, and security scans:
 
 ```bash
-bash scripts/check-prose.sh
+bash scripts/check-hygiene.sh
 pre-commit run --all-files
 gitleaks detect --log-opts="--all"
 ```
@@ -100,7 +100,7 @@ AWS_PROFILE=damolak aws cloudwatch set-alarm-state \
 
 During failure drills (e.g., stopping an active task via `aws ecs stop-task`), ECS Fargate launches a replacement task automatically to satisfy `desired_count = 1`.
 
-### Observed Behavior (Phase 5 Drill Evidence)
+### Observed Behavior (Task Recovery Drill)
 - **Recovery Time:** Replacement task reached healthy status and resumed HTTP 200 responses in **59.0 seconds**.
 - **Error Profile During Replacement:**
   - `T+0s` to `T+10s`: In-flight requests drain cleanly via ALB deregistration delay (30 seconds).

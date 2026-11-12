@@ -52,13 +52,13 @@ variable "private_subnet_cidrs" {
 }
 
 variable "enable_private_subnets" {
-  description = "Whether to create private subnets and a private route table. They exist for the prod NAT variant (ADR 0006); dev leaves this false. Forced on when enable_nat_gateway is true."
+  description = "Flag controlling private subnets and route table creation."
   type        = bool
   default     = false
 }
 
 variable "enable_nat_gateway" {
-  description = "Whether to provision a single NAT Gateway in public subnet 0 for private subnet egress (false in dev to avoid hourly NAT charges)."
+  description = "Flag controlling single NAT Gateway provisioning in public subnet 0."
   type        = bool
   default     = false
 }

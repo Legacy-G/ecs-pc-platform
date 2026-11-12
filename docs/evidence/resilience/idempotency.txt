@@ -1,4 +1,4 @@
-# Evidence: Phase 5 Idempotency Drill
+# Evidence: Infrastructure Idempotency Drill
 # Commit: bc98c9f
 # Timestamp: 2026-11-12T00:54:00Z
 # Evaluator: Terraform v1.17.0 / AWS Provider v6.72.0

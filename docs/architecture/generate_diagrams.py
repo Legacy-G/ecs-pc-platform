@@ -371,7 +371,7 @@ def generate_cicd_flow(output_svg, output_png):
 
   <rect x="55" y="260" width="210" height="150" rx="6" fill="#f8fafc" stroke="#cbd5e1" />
   <text x="65" y="285" class="box-title">Pre-Commit Hooks</text>
-  <text x="65" y="305" class="box-desc">- check-prose.sh (banned words)</text>
+  <text x="65" y="305" class="box-desc">- check-hygiene.sh (credentials)</text>
   <text x="65" y="325" class="box-desc">- gitleaks (secrets &amp; accounts)</text>
   <text x="65" y="345" class="box-desc">- ruff (lint &amp; format)</text>
   <text x="65" y="365" class="box-desc">- shellcheck &amp; yamllint</text>
@@ -389,8 +389,8 @@ def generate_cicd_flow(output_svg, output_png):
   <text x="325" y="120" fill="#ffffff" font-size="12px" font-weight="bold">2. GitHub Actions (PR Gates)</text>
 
   <rect x="325" y="150" width="230" height="110" rx="6" fill="#eff6ff" stroke="#93c5fd" />
-  <text x="335" y="175" class="stage-title">Job 1: Lint, Prose &amp; Tests</text>
-  <text x="335" y="195" class="box-desc">- check-prose.sh</text>
+  <text x="335" y="175" class="stage-title">Job 1: Lint, Hygiene &amp; Tests</text>
+  <text x="335" y="195" class="box-desc">- check-hygiene.sh</text>
   <text x="335" y="215" class="box-desc">- gitleaks detect</text>
   <text x="335" y="235" class="box-desc">- pytest services/api/tests (22)</text>
 
@@ -420,31 +420,31 @@ def generate_cicd_flow(output_svg, output_png):
 
   <!-- Pipeline Stages -->
   <rect x="620" y="150" width="520" height="50" rx="6" fill="#f0fdf4" stroke="#bbf7d0" />
-  <text x="635" y="180" class="stage-title">Stages 1-3: Checkout (SCM Polling) | Lint (Prose) | Unit Tests (Pytest)</text>
+  <text x="635" y="180" class="stage-title">Checkout (SCM Polling) | Hygiene Lint | Unit Tests (Pytest)</text>
 
   <rect x="620" y="215" width="520" height="60" rx="6" fill="#f0fdf4" stroke="#bbf7d0" />
-  <text x="635" y="240" class="stage-title">Stage 4: Build Container</text>
+  <text x="635" y="240" class="stage-title">Build Container</text>
   <text x="635" y="260" class="box-desc">docker buildx build --provenance=false --sbom=false --load -t damolak-api:GIT_SHA</text>
 
   <rect x="620" y="290" width="520" height="60" rx="6" fill="#f0fdf4" stroke="#bbf7d0" />
-  <text x="635" y="315" class="stage-title">Stage 5: Image Security Scan</text>
+  <text x="635" y="315" class="stage-title">Image Security Scan</text>
   <text x="635" y="335" class="box-desc">Trivy vulnerability scan --severity HIGH,CRITICAL --ignore-unfixed (0 CVEs gate)</text>
 
   <rect x="620" y="365" width="520" height="65" rx="6" fill="#f0fdf4" stroke="#bbf7d0" />
-  <text x="635" y="390" class="stage-title">Stage 6: Push to Amazon ECR</text>
+  <text x="635" y="390" class="stage-title">Push to Amazon ECR</text>
   <text x="635" y="410" class="box-desc">Silenced credential pipe (set +x, password-stdin) -&gt; Tag: GIT_SHA pushed to ECR</text>
 
   <rect x="620" y="445" width="520" height="65" rx="6" fill="#f0fdf4" stroke="#bbf7d0" />
-  <text x="635" y="470" class="stage-title">Stage 7: Terraform fmt / validate / plan (dev)</text>
+  <text x="635" y="470" class="stage-title">Terraform Validate &amp; Plan (dev)</text>
   <text x="635" y="490" class="box-desc">Dynamic backend.hcl generation -&gt; terraform plan -var="image_tag=GIT_SHA" -out=plan</text>
 
   <rect x="620" y="525" width="520" height="75" rx="6" fill="#f0fdf4" stroke="#bbf7d0" />
-  <text x="635" y="550" class="stage-title">Stage 8: Apply plan (Rolling Update)</text>
+  <text x="635" y="550" class="stage-title">Apply Plan (Rolling Update)</text>
   <text x="635" y="570" class="box-desc">terraform apply jenkins.tfplan -&gt; ECS Task Definition updated -&gt; Rolling Deployment</text>
   <text x="635" y="588" class="box-desc">Circuit Breaker active | Wait for steady state</text>
 
   <rect x="620" y="615" width="520" height="70" rx="6" fill="#f0fdf4" stroke="#bbf7d0" />
-  <text x="635" y="640" class="stage-title">Stage 9: Live ALB Smoke Test &amp; Post Cleanup</text>
+  <text x="635" y="640" class="stage-title">Live ALB Smoke Test &amp; Cleanup</text>
   <text x="635" y="660" class="box-desc">scripts/smoke.sh against dev ALB URL -&gt; 401 unauth, 401 wrong key, 200 SSM key, 404 route</text>
   <text x="635" y="675" class="box-desc">deleteDir() workspace sanitisation</text>
 
@@ -586,7 +586,7 @@ def generate_cicd_flow(output_svg, output_png):
     )
     draw.text(
         (635, 168),
-        "Stages 1-3: Checkout (SCM Polling) | Lint (Prose) | Unit Tests (Pytest)",
+        "Checkout (SCM Polling) | Hygiene Lint | Unit Tests (Pytest)",
         fill=(15, 23, 42),
         font=f_box_t,
     )
@@ -594,7 +594,7 @@ def generate_cicd_flow(output_svg, output_png):
     draw.rectangle(
         [620, 215, 1140, 275], fill=(240, 253, 244), outline=(187, 247, 208), width=1
     )
-    draw.text((635, 228), "Stage 4: Build Container", fill=(15, 23, 42), font=f_box_t)
+    draw.text((635, 228), "Build Container", fill=(15, 23, 42), font=f_box_t)
     draw.text(
         (635, 248),
         "docker buildx build --provenance=false --sbom=false --load -t damolak-api:${GIT_SHA}",
@@ -605,9 +605,7 @@ def generate_cicd_flow(output_svg, output_png):
     draw.rectangle(
         [620, 290, 1140, 350], fill=(240, 253, 244), outline=(187, 247, 208), width=1
     )
-    draw.text(
-        (635, 303), "Stage 5: Image Security Scan", fill=(15, 23, 42), font=f_box_t
-    )
+    draw.text((635, 303), "Image Security Scan", fill=(15, 23, 42), font=f_box_t)
     draw.text(
         (635, 323),
         "Trivy vulnerability scan --severity HIGH,CRITICAL --ignore-unfixed (0 CVEs gate)",
@@ -618,9 +616,7 @@ def generate_cicd_flow(output_svg, output_png):
     draw.rectangle(
         [620, 365, 1140, 430], fill=(240, 253, 244), outline=(187, 247, 208), width=1
     )
-    draw.text(
-        (635, 378), "Stage 6: Push to Amazon ECR", fill=(15, 23, 42), font=f_box_t
-    )
+    draw.text((635, 378), "Push to Amazon ECR", fill=(15, 23, 42), font=f_box_t)
     draw.text(
         (635, 398),
         "Silenced credential pipe (set +x, password-stdin) -> Tag: ${GIT_SHA} pushed to ECR",
@@ -633,7 +629,7 @@ def generate_cicd_flow(output_svg, output_png):
     )
     draw.text(
         (635, 458),
-        "Stage 7: Terraform fmt / validate / plan (dev)",
+        "Terraform Validate & Plan (dev)",
         fill=(15, 23, 42),
         font=f_box_t,
     )
@@ -649,7 +645,7 @@ def generate_cicd_flow(output_svg, output_png):
     )
     draw.text(
         (635, 538),
-        "Stage 8: Apply plan (Rolling Update)",
+        "Apply Plan (Rolling Update)",
         fill=(15, 23, 42),
         font=f_box_t,
     )
@@ -665,7 +661,7 @@ def generate_cicd_flow(output_svg, output_png):
     )
     draw.text(
         (635, 628),
-        "Stage 9: Live ALB Smoke Test & Post Cleanup",
+        "Live ALB Smoke Test & Cleanup",
         fill=(15, 23, 42),
         font=f_box_t,
     )

@@ -31,6 +31,12 @@ Terraform state files store resource attributes in plaintext JSON. If an `aws_ia
      * `ecr:GetAuthorizationToken` and `sts:GetCallerIdentity` require `Resource = "*"` by AWS IAM specification.
      * Regional stack actions (`ecs:*`, `ec2:*`, `elasticloadbalancing:*`, `logs:*`, `cloudwatch:*`, `sns:*`, `application-autoscaling:*`) use `Resource = "*"` constrained by `Condition: StringEquals: aws:RequestedRegion = eu-north-1` because EC2/VPC/ELB `Describe*` calls, `ecs:RegisterTaskDefinition`, and newly created VPC/subnet/security-group IDs do not support static ARN prefix conditions prior to creation unless `aws:RequestTag` conditions are added to every individual EC2/ELB action.
 
+## Alternatives considered
+
+1. **DynamoDB state locking table:** Deprecated in Terraform 1.17 in favor of native S3 lockfile locking (`use_lockfile = true`), avoiding DynamoDB provisioning and capacity charges.
+2. **Reading SSM parameters directly in Terraform data sources:** Exposes plaintext secret values in `terraform.tfstate`.
+3. **Broad AdministratorAccess for deployment:** Grants excessive privilege; rejected in favor of resource-scoped permissions constrained by an explicit boundary.
+
 ## Consequences
 
 * No secret (`API_KEY` or IAM secret access key) is ever stored in local or S3 Terraform state.

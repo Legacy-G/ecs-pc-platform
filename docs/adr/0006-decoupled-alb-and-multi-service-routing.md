@@ -13,7 +13,12 @@ Split the Application Load Balancer into a dedicated `alb` module:
 1. `infra/modules/alb`: Provisions the public ALB, the ALB security group (with HTTP TCP 80 ingress), and an HTTP listener whose default action returns a fixed `404 Not Found` response.
 2. `infra/modules/ecs-service`: Provisions the target group, the listener rule (with configurable `priority` and `path_patterns`), ECS service, task definition, IAM execution/task roles, task security group, and autoscaling.
 3. Decoupled security group egress: Each service provisions its own `aws_vpc_security_group_egress_rule` on the ALB security group targeting its own task security group.
-4. Adding a second service (such as Phase 9 optional service) requires only calling `module "ecs-service"` with distinct `service_name`, `listener_rule_priority`, and `path_patterns`.
+4. Adding an additional service requires calling `module "ecs-service"` with distinct `service_name`, `listener_rule_priority`, and `path_patterns`.
+
+## Alternatives considered
+
+1. **Combined ALB and ECS service module:** Precludes multi-service routing and forces redundant load balancer provisioning per microservice.
+2. **Dedicated reverse proxy container (e.g., NGINX on ECS):** Introduces extra container maintenance and compute overhead compared to native ALB path-based routing.
 
 ## Consequences
 

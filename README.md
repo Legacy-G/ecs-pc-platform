@@ -38,7 +38,7 @@ The platform provisions an isolated, multi-AZ network architecture hosting conta
 │   ├── adr/                      # Architecture Decision Records (0001 - 0007)
 │   ├── architecture/             # Diagrams as code (Python generator, SVG, PNG)
 │   ├── evidence/                 # Sanitised validation evidence across project phases
-│   ├── HUMAN_STEPS.md            # Operator procedures requiring human credentials
+│   ├── manual-setup.md           # Operator procedures requiring personal credentials
 │   ├── REQUIREMENTS.md           # Traceability matrix mapping requirements to evidence
 │   └── RUNBOOK.md                # Operations, monitoring, recovery drills, and teardown
 ├── infra/
@@ -138,7 +138,7 @@ bash scripts/smoke.sh "${ALB_URL}" "${GIT_SHA}" "/damolak/dev/api-key"
 
 The deployment lifecycle uses a two-tier approach separating pull-request quality gates from deployment execution:
 
-1. **GitHub Actions (CI Only):** Runs offline linting (`check-prose`, `ruff`), security scanning (`gitleaks`, `hadolint`, `trivy`), unit tests (`pytest`), and Terraform format/validation. It contains zero AWS credentials and cannot write to cloud infrastructure.
+1. **GitHub Actions (CI Only):** Runs offline linting (`check-hygiene`, `ruff`), security scanning (`gitleaks`, `hadolint`, `trivy`), unit tests (`pytest`), and Terraform format/validation. It contains zero AWS credentials and cannot write to cloud infrastructure.
 2. **Jenkins Controller (CD & Deployment):** Runs as a local Docker container (`127.0.0.1:8088`) executing declarative builds on changes merged to `main`. It authenticates to AWS via a dedicated IAM user (`damolak-jenkins-ci`) restricted by an explicit Permissions Boundary.
 
 ![CI/CD Flow](docs/architecture/cicd-flow.png)
@@ -235,11 +235,10 @@ To stop all hourly charges when work is complete:
 
 ## Evidence Index
 
-All project evidence files are stored with commit SHAs and UTC timestamps:
+Project evidence files are stored with commit SHAs and UTC timestamps:
 
-- **Phase 1 (Containerisation & Local Quality):** [docs/evidence/phase1/](docs/evidence/phase1/)
-- **Phase 2 (Terraform Architecture & Offline Verification):** [docs/evidence/phase2/](docs/evidence/phase2/)
-- **Phase 3A (Bootstrap, ECR Push & CVE Findings):** [docs/evidence/phase3a/](docs/evidence/phase3a/)
-- **Phase 3B (Dev Rollout, ALB Smoke Test & Alarms):** [docs/evidence/phase3b/](docs/evidence/phase3b/)
-- **Phase 4 (Jenkins CI/CD Pipeline & Proof Deployment):** [docs/evidence/phase4/](docs/evidence/phase4/)
-- **Phase 5 (Idempotency Plans, Alarm Drill & Task Recovery):** [docs/evidence/phase5/](docs/evidence/phase5/)
+- **Application (Containerization & Local Quality):** [docs/evidence/application/](docs/evidence/application/)
+- **Infrastructure (Terraform Architecture & Offline Verification):** [docs/evidence/infrastructure/](docs/evidence/infrastructure/)
+- **Deployment (Bootstrap, ECR Push & Runtime Rollout):** [docs/evidence/deployment/](docs/evidence/deployment/)
+- **Pipeline (Automated CI/CD Deployment):** [docs/evidence/pipeline/](docs/evidence/pipeline/)
+- **Resilience (Idempotency Plans, Alarm Drill & Task Recovery):** [docs/evidence/resilience/](docs/evidence/resilience/)
