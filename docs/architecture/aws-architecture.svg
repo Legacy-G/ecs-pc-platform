@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    .title { font-size: 20px; font-weight: bold; fill: #1e293b; }
+    .subtitle { font-size: 13px; fill: #64748b; }
+    .boundary-title { font-size: 14px; font-weight: 600; fill: #334155; }
+    .box-title { font-size: 14px; font-weight: bold; fill: #0f172a; }
+    .box-desc { font-size: 11px; fill: #475569; }
+    .edge-label { font-size: 11px; font-weight: 500; fill: #0284c7; }
+  </style>
+
+  <!-- Background -->
+  <rect width="1200" height="800" fill="#f8fafc" />
+
+  <!-- Header -->
+  <text x="40" y="45" class="title">AWS Infrastructure Architecture - Dev Stack</text>
+  <text x="40" y="68" class="subtitle">Region: eu-north-1 | Single-tenant containerised API with ALB, Fargate, and observability</text>
+
+  <!-- AWS Cloud Boundary -->
+  <rect x="40" y="90" width="1120" height="670" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
+  <rect x="40" y="90" width="180" height="28" rx="4" fill="#0f172a" />
+  <text x="50" y="109" fill="#ffffff" font-size="12px" font-weight="bold">AWS Cloud (eu-north-1)</text>
+
+  <!-- External S3 State & SSM & ECR & Observability (Outside VPC) -->
+  <g transform="translate(60, 140)">
+    <!-- S3 State Backend -->
+    <rect x="0" y="0" width="220" height="110" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" />
+    <text x="15" y="25" class="box-title">S3 State Backend</text>
+    <text x="15" y="45" class="box-desc">damolak-tfstate-*-eu-north-1</text>
+    <text x="15" y="65" class="box-desc">Versioned, Encrypted (SSE-S3)</text>
+    <text x="15" y="85" class="box-desc">Native S3 Lockfile Locking</text>
+
+    <!-- ECR Repository -->
+    <rect x="0" y="130" width="220" height="110" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" />
+    <text x="15" y="155" class="box-title">Amazon ECR</text>
+    <text x="15" y="175" class="box-desc">Repository: damolak-api</text>
+    <text x="15" y="195" class="box-desc">Tag Immutability: ENABLED</text>
+    <text x="15" y="215" class="box-desc">Scan on Push (Basic Scan)</text>
+
+    <!-- SSM Parameter Store -->
+    <rect x="0" y="260" width="220" height="100" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" />
+    <text x="15" y="285" class="box-title">SSM Parameter Store</text>
+    <text x="15" y="305" class="box-desc">Path: /damolak/dev/api-key</text>
+    <text x="15" y="325" class="box-desc">Type: SecureString (KMS)</text>
+    <text x="15" y="345" class="box-desc">In-memory decryption</text>
+
+    <!-- Observability / SNS -->
+    <rect x="0" y="380" width="220" height="210" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" />
+    <text x="15" y="405" class="box-title">Observability &amp; Alarms</text>
+    <text x="15" y="425" class="box-desc">Log Group: /ecs/damolak-dev</text>
+    <text x="15" y="445" class="box-desc">Metric Filter: [JSON errors]</text>
+    <text x="15" y="465" class="box-desc">Alarms: 5xx, UnhealthyHosts,</text>
+    <text x="15" y="485" class="box-desc">HealthyHostsLow, CPU, Errors</text>
+    <text x="15" y="515" class="box-title" font-size="12px">SNS Topic: damolak-dev-alerts</text>
+    <text x="15" y="535" class="box-desc">Email: alerts@example.com</text>
+    <text x="15" y="555" class="box-desc">Dashboard: damolak-dev-overview</text>
+  </g>
+
+  <!-- VPC Boundary -->
+  <rect x="310" y="140" width="820" height="590" rx="10" fill="#f8fafc" stroke="#2563eb" stroke-width="2" stroke-dasharray="6,6" />
+  <rect x="310" y="140" width="240" height="26" rx="4" fill="#2563eb" />
+  <text x="320" y="158" fill="#ffffff" font-size="12px" font-weight="bold">VPC: 10.20.0.0/16 (damolak-dev-vpc)</text>
+
+  <!-- Internet Gateway -->
+  <rect x="330" y="185" width="780" height="40" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5" />
+  <text x="350" y="210" font-size="13px" font-weight="bold" fill="#0369a1">Internet Gateway (IGW) - Route: 0.0.0.0/0 -&gt; igw-0c8034af596b656e4</text>
+
+  <!-- Public Subnet 1 (eu-north-1a) -->
+  <rect x="330" y="245" width="375" height="465" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5" />
+  <rect x="330" y="245" width="260" height="24" rx="4" fill="#64748b" />
+  <text x="340" y="262" fill="#ffffff" font-size="11px" font-weight="bold">Public Subnet 1 (10.20.0.0/24, eu-north-1a)</text>
+
+  <!-- Public Subnet 2 (eu-north-1b) -->
+  <rect x="735" y="245" width="375" height="465" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5" />
+  <rect x="735" y="245" width="260" height="24" rx="4" fill="#64748b" />
+  <text x="745" y="262" fill="#ffffff" font-size="11px" font-weight="bold">Public Subnet 2 (10.20.1.0/24, eu-north-1b)</text>
+
+  <!-- ALB Spanning Subnets -->
+  <rect x="350" y="285" width="740" height="110" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5" />
+  <text x="370" y="310" class="box-title">Application Load Balancer (ALB: damolak-dev-alb)</text>
+  <text x="370" y="330" class="box-desc">Public IPv4: Dual-AZ round-robin | Security Group: Ingress 80/tcp from 0.0.0.0/0</text>
+  <text x="370" y="350" class="box-desc">HTTP Listener (Port 80) -&gt; Target Group (damolak-dev-api-tg: Port 8000, deregistration_delay=30s)</text>
+  <text x="370" y="370" class="box-desc">Health Check: /api/v1/health/ (interval=15s, healthy=2, unhealthy=3, timeout=5s)</text>
+
+  <!-- ECS Fargate Service -->
+  <rect x="350" y="420" width="740" height="270" rx="8" fill="#fdf4ff" stroke="#a855f7" stroke-width="1.5" />
+  <text x="370" y="445" class="box-title">ECS Cluster: damolak-dev-cluster | Service: damolak-dev-api (Fargate)</text>
+  <text x="370" y="465" class="box-desc">Capacity: 1 Task (0.25 vCPU, 512 MB) | AutoScaling: 1-2 Tasks (Target Tracking: 70% CPU)</text>
+  <text x="370" y="485" class="box-desc">Task Security Group: Ingress 8000/tcp from ALB SG ONLY | Egress: 443/tcp (ECR, SSM, Logs)</text>
+
+  <!-- Fargate Task Box -->
+  <rect x="380" y="510" width="680" height="160" rx="6" fill="#ffffff" stroke="#c084fc" stroke-width="1.5" />
+  <text x="400" y="535" class="box-title" font-size="13px">Fargate Task Container: damolak-api:0.1.1</text>
+  <text x="400" y="555" class="box-desc">- Non-root execution: appuser (UID 10001, GID 10001)</text>
+  <text x="400" y="575" class="box-desc">- Read-only root filesystem with tmpfs mounted at /tmp</text>
+  <text x="400" y="595" class="box-desc">- Secrets: X-API-Key injected into memory via SSM Parameter Store at startup</text>
+  <text x="400" y="615" class="box-desc">- Reverse Proxy Config: FORWARDED_ALLOW_IPS="10.20.0.0/16" (logs real client IP from X-Forwarded-For)</text>
+  <text x="400" y="635" class="box-desc">- Container stopTimeout: 30s (matches ALB deregistration delay for zero dropped in-flight requests)</text>
+
+  <!-- Traffic Flow Arrows (Paths) -->
+  <!-- Client Traffic -->
+  <path d="M 720 70 L 720 185" fill="none" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrow)" />
+  <text x="730" y="130" class="edge-label">Client HTTP (Port 80)</text>
+
+  <!-- ALB to Task -->
+  <path d="M 720 395 L 720 510" fill="none" stroke="#2563eb" stroke-width="2.5" />
+  <text x="730" y="415" class="edge-label">HTTP:8000 (Forwarded)</text>
+
+  <!-- Task to ECR/SSM/Logs -->
+  <path d="M 380 590 L 280 590 L 280 440 L 220 440" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,4" />
+  <text x="235" y="520" font-size="10px" fill="#64748b">Logs / Metrics</text>
+
+  <path d="M 380 590 L 280 590 L 280 310 L 220 310" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,4" />
+  <text x="240" y="350" font-size="10px" fill="#64748b">SSM GetSecret</text>
+
+  <path d="M 380 590 L 280 590 L 280 185 L 220 185" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,4" />
+  <text x="245" y="210" font-size="10px" fill="#64748b">ECR Pull</text>
+
+</svg>
