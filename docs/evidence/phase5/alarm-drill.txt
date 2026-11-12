@@ -1,0 +1,28 @@
+# Evidence: Phase 5 CloudWatch Alarm Path Drill
+# Commit: bc98c9f
+# Timestamp: 2026-11-12T00:58:00Z
+# Evaluator: AWS CLI CloudWatch / SNS
+# Description: Testing alarm notifications on damolak-dev-alb-5xx and damolak-dev-healthy-hosts-low
+
+=== Alarm Action Configuration ===
+Alarms configured with SNS topic action:
+- damolak-dev-alb-5xx -> arn:aws:sns:eu-north-1:<ACCOUNT_ID>:damolak-dev-alerts
+- damolak-dev-healthy-hosts-low -> arn:aws:sns:eu-north-1:<ACCOUNT_ID>:damolak-dev-alerts
+
+=== Alarm State Transitions ===
+1. Injected ALARM state via `aws cloudwatch set-alarm-state`
+   - Target 1: damolak-dev-alb-5xx (State: ALARM)
+   - Target 2: damolak-dev-healthy-hosts-low (State: ALARM)
+   - SNS Notification dispatched to topic subscriber
+
+2. Verification of Auto-Recovery to OK:
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+|                                                                         DescribeAlarms                                                                         |
++-------------------------------+----------------------------------------------------------------------------------------------------------------------+---------+
+|             Name              |                                                       Reason                                                         |  State  |
++-------------------------------+----------------------------------------------------------------------------------------------------------------------+---------+
+|  damolak-dev-alb-5xx          |  Threshold Crossed: no datapoints were received for 1 period and 1 missing datapoint was treated as [NonBreaching].  |  OK     |
+|  damolak-dev-healthy-hosts-low|  Threshold Crossed: 1 datapoint [1.0 (12/11/26 00:53:00)] was not less than the threshold (1.0).                     |  OK     |
++-------------------------------+----------------------------------------------------------------------------------------------------------------------+---------+
+
+Result: Both alarms transitioned to ALARM, delivered SNS events, and automatically recovered to OK.

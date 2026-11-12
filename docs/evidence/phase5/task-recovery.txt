@@ -1,0 +1,32 @@
+# Evidence: Phase 5 ECS Task Failure Recovery Drill
+# Commit: bc98c9f
+# Timestamp: 2026-11-12T00:59:50Z
+# Evaluator: AWS CLI / Live ALB Polling
+# Description: Stopping active task, tracking HTTP error profile and time to healthy replacement.
+
+Target Cluster: damolak-dev-cluster
+Target Service: damolak-dev-api
+ALB Endpoint  : http://damolak-dev-alb-980615940.eu-north-1.elb.amazonaws.com/api/v1/info/
+
+Initial Running Task: 4b3702cca21646c1a2ac7a79dca7f535
+Action              : aws ecs stop-task (Reason: "Phase 5 QA drill: Task recovery test")
+
+=== Recovery Timeline ===
+- T+0.0s : stop-task invoked (Exit code 0).
+- T+2.3s - T+10.1s : HTTP 200 (in-flight connections drained via 30s deregistration delay).
+- T+12.5s - T+36.6s: Connection errors / resets as previous task socket shuts down.
+- T+44.6s - T+55.3s: HTTP 503 Service Unavailable (ALB target group has 0 healthy hosts).
+- T+59.0s: HTTP 200 OK received from newly spawned task.
+
+=== Outcome Metrics ===
+- Total Recovery Time: 59.0 seconds.
+- Observed HTTP Errors: 4 connection errors, 3 HTTP 503 Service Unavailable errors.
+- Replacement Task ID : 4ca87a253db243da83510f469d139f70.
+- ECS Service Stability: Verified via `aws ecs wait services-stable` (0 drift, steady state reached).
+
+=== Root Cause & Architecture Note ===
+In a single-instance dev environment (desired_count = 1, min_capacity = 1), task termination
+inevitably incurs a temporary availability gap (~59 seconds) while AWS Fargate provisions the ENI,
+pulls the container image, starts uvicorn, and satisfies ALB health check thresholds (2 consecutive
+healthy checks at 15s intervals). For production, multi-task deployment (desired_count >= 2) across
+multiple Availability Zones prevents service interruption during task replacement.
