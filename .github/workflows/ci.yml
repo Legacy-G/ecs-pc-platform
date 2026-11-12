@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   lint-and-test:
-    name: Lint, Prose Audit, and Unit Tests
+    name: Lint, Hygiene Checks, and Unit Tests
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -49,8 +49,8 @@ jobs:
             "pytest==9.2.0" \
             "pytest-cov==7.1.0"
 
-      - name: Run prose and sensitive-pattern check
-        run: bash scripts/check-prose.sh
+      - name: Run repository hygiene check
+        run: bash scripts/check-hygiene.sh
 
       - name: Run yamllint
         run: yamllint -c .yamllint.yml --strict .

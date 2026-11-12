@@ -7,14 +7,14 @@
 
 State the technical requirement, constraint, or trade-off that requires a decision. Include concrete numbers, quotas, or SCP behaviours observed in the environment.
 
-## Options Considered
+## Decision
+
+State the chosen approach and the exact configuration or parameters used.
+
+## Alternatives considered
 
 1. **Option A:** Short description, cost, and operational trade-offs.
 2. **Option B:** Short description, cost, and operational trade-offs.
-
-## Decision
-
-State the chosen option and the exact configuration or parameters used.
 
 ## Consequences
 

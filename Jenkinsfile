@@ -36,7 +36,7 @@ pipeline {
 
         stage('Lint') {
             steps {
-                sh 'bash scripts/check-prose.sh'
+                sh 'bash scripts/check-hygiene.sh'
             }
         }
 

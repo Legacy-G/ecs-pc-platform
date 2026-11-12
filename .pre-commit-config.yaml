@@ -8,9 +8,9 @@ default_install_hook_types:
 repos:
   - repo: local
     hooks:
-      - id: check-prose
-        name: repository prose and banned-word audit
-        entry: bash scripts/check-prose.sh
+      - id: check-hygiene
+        name: repository hygiene audit
+        entry: bash scripts/check-hygiene.sh
         language: system
         pass_filenames: false
 

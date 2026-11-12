@@ -11,23 +11,18 @@ Two runtime questions must be settled:
 1. Which Python web framework to use.
 2. Whether to run Uvicorn directly as PID 1 or behind Gunicorn with multiple worker processes.
 
-## Options Considered
-
-1. **FastAPI + single Uvicorn process per container (`uvicorn app.main:app`):**
-   - Native Pydantic v2 request/response validation, `pydantic-settings` configuration, and built-in OpenAPI schema generation.
-   - Single event loop in one process fits within a 0.25 vCPU slice without multi-worker memory duplication or context-switching overhead.
-   - Direct `SIGTERM` handling with `--timeout-graceful-shutdown 20`.
-2. **FastAPI + Gunicorn with `UvicornWorker` (multiple workers):**
-   - Adds process-manager supervision inside the container, duplicating base interpreter memory across workers (~50-70 MB per worker) while sharing the same 0.25 vCPU core.
-   - Redundant when ECS Fargate already supervises the container lifecycle and scales horizontally by adding tasks.
-3. **Flask + Gunicorn:**
-   - Requires external libraries for request schema validation and OpenAPI generation.
-
 ## Decision
 
-Build the service with FastAPI (`0.162.2`), Pydantic v2 (`2.14.3`), and `pydantic-settings` (`2.16.2`) on Python `3.13.7` (`python:3.13-slim-bookworm` pinned by SHA-256 digest). Run a single Uvicorn process (`0.54.0`) as the container entrypoint with:
-- `--proxy-headers` and `--forwarded-allow-ips` set from `FORWARDED_ALLOW_IPS` (the VPC CIDR in AWS, `127.0.0.1` locally), never `*` in production.
-- `--timeout-graceful-shutdown 20`, paired with ECS `stopTimeout = 30` seconds and ALB target group `deregistration_delay = 25` seconds.
+Build the service with FastAPI (`0.162.2`), Pydantic v2 (`2.14.3`), and `pydantic-settings` (`2.16.2`) on Python `3.13.7` (`python:3.13-slim-bookworm` pinned by digest). Run a single Uvicorn process (`0.54.0`) as the container entrypoint with:
+- `--proxy-headers` and `--forwarded-allow-ips` set from `FORWARDED_ALLOW_IPS` (VPC CIDR in AWS, `127.0.0.1` locally).
+- `--timeout-graceful-shutdown 20`, paired with ECS `stopTimeout = 30` seconds and ALB target group `deregistration_delay = 30` seconds.
+
+## Alternatives considered
+
+1. **FastAPI with multi-worker Gunicorn:**
+   Duplicated base interpreter memory across workers on a 0.25 vCPU core without throughput benefit, while ECS Fargate handles horizontal scaling.
+2. **Flask with Gunicorn:**
+   Lacks native asynchronous request handling, schema validation, and automatic OpenAPI generation.
 
 ## Consequences
 

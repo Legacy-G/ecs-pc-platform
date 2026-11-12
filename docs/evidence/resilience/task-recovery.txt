@@ -1,4 +1,4 @@
-# Evidence: Phase 5 ECS Task Failure Recovery Drill
+# Evidence: ECS Task Failure Recovery Drill
 # Commit: bc98c9f
 # Timestamp: 2026-11-12T00:59:50Z
 # Evaluator: AWS CLI / Live ALB Polling
@@ -9,7 +9,7 @@ Target Service: damolak-dev-api
 ALB Endpoint  : http://damolak-dev-alb-980615940.eu-north-1.elb.amazonaws.com/api/v1/info/
 
 Initial Running Task: 4b3702cca21646c1a2ac7a79dca7f535
-Action              : aws ecs stop-task (Reason: "Phase 5 QA drill: Task recovery test")
+Action              : aws ecs stop-task (Reason: "QA drill: Task recovery test")
 
 === Recovery Timeline ===
 - T+0.0s : stop-task invoked (Exit code 0).

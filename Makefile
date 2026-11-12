@@ -7,12 +7,12 @@ AWS_PROFILE ?= damolak
 AWS_REGION  ?= eu-north-1
 TF_ENV      ?= dev
 
-.PHONY: help up local-down bootstrap down nuke test lint scan prose cost-check evidence \
+.PHONY: help up local-down bootstrap down nuke test lint scan hygiene cost-check evidence \
         tf-fmt tf-validate tf-test tf-lint tf-docs plan apply destroy smoke diagrams \
         jenkins-up jenkins-down
 
 help:
-	@echo "Targets: up local-down bootstrap down nuke test lint scan prose cost-check evidence tf-fmt tf-validate tf-test tf-lint tf-docs plan apply destroy smoke diagrams jenkins-up jenkins-down"
+	@echo "Targets: up local-down bootstrap down nuke test lint scan hygiene cost-check evidence tf-fmt tf-validate tf-test tf-lint tf-docs plan apply destroy smoke diagrams jenkins-up jenkins-down"
 
 jenkins-up:
 	docker compose --env-file ci/jenkins/.jenkins.env -f ci/jenkins/docker-compose.yml up --build -d
@@ -38,7 +38,7 @@ nuke:
 test:
 	pytest services/api/tests
 
-lint: prose
+lint: hygiene
 	pre-commit run --all-files
 
 scan:
@@ -46,8 +46,8 @@ scan:
 	docker run --rm -i hadolint/hadolint:v$(HADOLINT_VERSION) < services/api/Dockerfile
 	docker run --rm -v "$$(pwd):/work" -w /work aquasec/trivy:$(TRIVY_VERSION) config --severity HIGH,CRITICAL --exit-code 1 infra
 
-prose:
-	bash scripts/check-prose.sh
+hygiene:
+	bash scripts/check-hygiene.sh
 
 cost-check:
 	AWS_PROFILE=$(AWS_PROFILE) AWS_REGION=$(AWS_REGION) bash scripts/cost-check.sh

@@ -22,6 +22,11 @@ Disable Container Insights on the ECS cluster (`setting { name = "containerInsig
 3. Replace the `ECS/ContainerInsights` `RunningTaskCount` alarm with `AWS/ApplicationELB` `HealthyHostCount`, which fires whenever the number of healthy serving targets drops below 1.
 4. Capture application-level errors using a CloudWatch Logs metric filter `{ $.level = "ERROR" }` over the 7-day retention log group.
 
+## Alternatives considered
+
+1. **Enable Container Insights:** Provides granular container diagnostics but incurs custom metric and log ingestion charges.
+2. **Third-party monitoring agents:** Introduces external dependencies and additional container processes.
+
 ## Consequences
 
 - **Positive:** Eliminates custom metric and log ingestion charges from Container Insights, preserving credits.

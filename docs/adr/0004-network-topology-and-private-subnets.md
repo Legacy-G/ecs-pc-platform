@@ -18,6 +18,11 @@ The `network` module defines both public and private subnets, controlled by the 
 2. In `prod`: `enable_private_subnets = true` and `enable_nat_gateway = true`. Both private subnets and an Elastic IP + NAT Gateway are created, allowing tasks to run with `assign_public_ip = false`.
 3. If `enable_nat_gateway = true` is passed, `create_private_subnets` is automatically evaluated as true to guarantee valid route targets.
 
+## Alternatives considered
+
+1. **VPC interface endpoints (PrivateLink):** Cost approximately USD 7.20/month per endpoint per AZ for ECR, CloudWatch, and SSM, exceeding the credit allowance.
+2. **NAT Gateway in development:** Incurs USD 32.40/month in fixed charges, which exhausts testing credits.
+
 ## Consequences
 
 - **Positive:** Saves over USD 32.40 per month in `dev`, allowing the entire challenge infrastructure to remain comfortably under the USD 40 credit ceiling.

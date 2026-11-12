@@ -1,6 +1,6 @@
 # Commit: 7ef87f8
 # Generated: 2026-11-10T11:20:45Z
-# Cost Check: Phase 3B Dev Infrastructure Verification
+# Cost Check: Runtime Infrastructure Deployment
 == Account plan and remaining credits (us-east-1 endpoint) ==
 ----------------------------------------------------------------------
 |                         GetAccountPlanState                        |
