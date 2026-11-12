@@ -21,39 +21,43 @@
   <rect x="40" y="90" width="180" height="28" rx="4" fill="#0f172a" />
   <text x="50" y="109" fill="#ffffff" font-size="12px" font-weight="bold">AWS Cloud (eu-north-1)</text>
 
-  <!-- External S3 State & SSM & ECR & Observability (Outside VPC) -->
+  <!-- External S3 State & SSM & ECR & Observability & Budgets (Outside VPC) -->
   <g transform="translate(60, 140)">
-    <!-- S3 State Backend -->
+    <!-- S3 State Backend & AWS Budgets -->
     <rect x="0" y="0" width="220" height="110" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" />
-    <text x="15" y="25" class="box-title">S3 State Backend</text>
-    <text x="15" y="45" class="box-desc">damolak-tfstate-*-eu-north-1</text>
-    <text x="15" y="65" class="box-desc">Versioned, Encrypted (SSE-S3)</text>
-    <text x="15" y="85" class="box-desc">Native S3 Lockfile Locking</text>
+    <text x="15" y="24" class="box-title">S3 Backend &amp; Budgets</text>
+    <text x="15" y="44" class="box-desc">S3: damolak-tfstate-*-eu-north-1</text>
+    <text x="15" y="64" class="box-desc">Lockfile Locking, Encrypted</text>
+    <text x="15" y="84" class="box-desc">Budget: $35 alert / $40 limit</text>
+    <text x="15" y="102" class="box-desc">IAM CI: jenkins-ci (Boundary)</text>
 
     <!-- ECR Repository -->
-    <rect x="0" y="130" width="220" height="110" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" />
-    <text x="15" y="155" class="box-title">Amazon ECR</text>
-    <text x="15" y="175" class="box-desc">Repository: damolak-api</text>
-    <text x="15" y="195" class="box-desc">Tag Immutability: ENABLED</text>
-    <text x="15" y="215" class="box-desc">Scan on Push (Basic Scan)</text>
+    <rect x="0" y="125" width="220" height="95" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" />
+    <text x="15" y="148" class="box-title">Amazon ECR</text>
+    <text x="15" y="168" class="box-desc">Repository: damolak-api</text>
+    <text x="15" y="188" class="box-desc">Tag Immutability: ENABLED</text>
+    <text x="15" y="208" class="box-desc">Scan on Push (Basic Scan)</text>
 
     <!-- SSM Parameter Store -->
-    <rect x="0" y="260" width="220" height="100" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" />
-    <text x="15" y="285" class="box-title">SSM Parameter Store</text>
-    <text x="15" y="305" class="box-desc">Path: /damolak/dev/api-key</text>
-    <text x="15" y="325" class="box-desc">Type: SecureString (KMS)</text>
-    <text x="15" y="345" class="box-desc">In-memory decryption</text>
+    <rect x="0" y="235" width="220" height="90" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" />
+    <text x="15" y="258" class="box-title">SSM Parameter Store</text>
+    <text x="15" y="278" class="box-desc">Path: /damolak/dev/api-key</text>
+    <text x="15" y="298" class="box-desc">Type: SecureString (KMS)</text>
+    <text x="15" y="316" class="box-desc">In-memory decryption</text>
 
     <!-- Observability / SNS -->
-    <rect x="0" y="380" width="220" height="210" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" />
-    <text x="15" y="405" class="box-title">Observability &amp; Alarms</text>
-    <text x="15" y="425" class="box-desc">Log Group: /ecs/damolak-dev</text>
-    <text x="15" y="445" class="box-desc">Metric Filter: [JSON errors]</text>
-    <text x="15" y="465" class="box-desc">Alarms: 5xx, UnhealthyHosts,</text>
-    <text x="15" y="485" class="box-desc">HealthyHostsLow, CPU, Errors</text>
-    <text x="15" y="515" class="box-title" font-size="12px">SNS Topic: damolak-dev-alerts</text>
-    <text x="15" y="535" class="box-desc">Email: alerts@example.com</text>
-    <text x="15" y="555" class="box-desc">Dashboard: damolak-dev-overview</text>
+    <rect x="0" y="340" width="220" height="250" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" />
+    <text x="15" y="364" class="box-title">Observability &amp; Alarms</text>
+    <text x="15" y="384" class="box-desc">Log Group: /ecs/damolak-dev</text>
+    <text x="15" y="404" class="box-desc">Metric Filter: app_errors [JSON]</text>
+    <text x="15" y="424" class="box-desc">5 Alarms (1-period threshold):</text>
+    <text x="15" y="444" class="box-desc">- damolak-dev-alb-5xx</text>
+    <text x="15" y="462" class="box-desc">- damolak-dev-healthy-hosts-low</text>
+    <text x="15" y="480" class="box-desc">- damolak-dev-unhealthy-hosts</text>
+    <text x="15" y="498" class="box-desc">- damolak-dev-high-cpu</text>
+    <text x="15" y="516" class="box-desc">- damolak-dev-app-log-errors</text>
+    <text x="15" y="542" class="box-title" font-size="12px">SNS: damolak-dev-alerts</text>
+    <text x="15" y="562" class="box-desc">Dashboard: damolak-dev-overview</text>
   </g>
 
   <!-- VPC Boundary -->
@@ -79,8 +83,8 @@
   <rect x="350" y="285" width="740" height="110" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5" />
   <text x="370" y="310" class="box-title">Application Load Balancer (ALB: damolak-dev-alb)</text>
   <text x="370" y="330" class="box-desc">Public IPv4: Dual-AZ round-robin | Security Group: Ingress 80/tcp from 0.0.0.0/0</text>
-  <text x="370" y="350" class="box-desc">HTTP Listener (Port 80) -&gt; Target Group (damolak-dev-api-tg: Port 8000, deregistration_delay=30s)</text>
-  <text x="370" y="370" class="box-desc">Health Check: /api/v1/health/ (interval=15s, healthy=2, unhealthy=3, timeout=5s)</text>
+  <text x="370" y="350" class="box-desc">HTTP Listener (Port 80): Default 404 Fixed-Response | Rule (Prio 100): /* -&gt; Target Group</text>
+  <text x="370" y="370" class="box-desc">Target Group (damolak-dev-api-tg: Port 8000, deregistration_delay=30s) | Health Check: /api/v1/health/</text>
 
   <!-- ECS Fargate Service -->
   <rect x="350" y="420" width="740" height="270" rx="8" fill="#fdf4ff" stroke="#a855f7" stroke-width="1.5" />
