@@ -75,6 +75,7 @@ pipeline {
                     passwordVariable: 'AWS_SECRET_ACCESS_KEY'
                 )]) {
                     sh '''
+                        { set +x; } 2>/dev/null
                         ACCOUNT_ID=$(cat /tmp/account_id.txt 2>/dev/null || true)
                         if [ -z "${ACCOUNT_ID}" ]; then
                             for i in 1 2 3 4 5; do
@@ -89,7 +90,6 @@ pipeline {
                         echo "${ACCOUNT_ID}" > /tmp/account_id.txt
                         REGISTRY="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
                         LOGGED_IN=false
-                        { set +x; } 2>/dev/null
                         for i in 1 2 3 4 5; do
                             if aws ecr get-login-password --region "${AWS_REGION}" 2>/dev/null | docker login --username AWS --password-stdin "${REGISTRY}" >/dev/null 2>&1; then
                                 LOGGED_IN=true
@@ -97,15 +97,16 @@ pipeline {
                             fi
                             sleep 3
                         done
-                        set -x
                         if [ "${LOGGED_IN}" != "true" ]; then
                             echo "ERROR: Failed to authenticate to ECR registry" >&2
                             exit 1
                         fi
+                        echo "Tagging and pushing container image to ECR repository ${ECR_REPOSITORY}..."
                         docker tag "${ECR_REPOSITORY}:${GIT_SHA}" "${REGISTRY}/${ECR_REPOSITORY}:${GIT_SHA}"
                         for i in 1 2 3; do
                             docker push "${REGISTRY}/${ECR_REPOSITORY}:${GIT_SHA}" && break || sleep 3
                         done
+                        set -x
                     '''
                 }
             }
@@ -119,6 +120,7 @@ pipeline {
                     passwordVariable: 'AWS_SECRET_ACCESS_KEY'
                 )]) {
                     sh '''
+                        { set +x; } 2>/dev/null
                         ACCOUNT_ID=$(cat /tmp/account_id.txt 2>/dev/null || true)
                         if [ -z "${ACCOUNT_ID}" ]; then
                             for i in 1 2 3 4 5; do
@@ -133,6 +135,7 @@ region       = "${AWS_REGION}"
 encrypt      = true
 use_lockfile = true
 EOF
+                        set -x
                         terraform fmt -check -recursive infra
 
                         INIT_OK=false

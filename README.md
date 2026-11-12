@@ -207,20 +207,29 @@ The AWS account sits within an AWS Organization whose Service Control Policy (SC
 | **Fargate Public IPv4 Address** | $0.0050 | $3.60 | Public subnet assignment |
 | **Total Dev Rate** | **$0.0574/hr** | **~$41.33/mo** | ~$1.38/day |
 
-### Complete Teardown Procedure
+### Teardown Procedure
 
-To stop all hourly charges:
+The destroy path was validated by plan only (`terraform plan -destroy` reports 0 to add, 0 to change, 36 to destroy).
 
-```bash
-# Destroy dev environment
-terraform -chdir=infra/envs/dev destroy -auto-approve
+To stop all hourly charges when work is complete:
 
-# Destroy shared resources
-terraform -chdir=infra/envs/shared destroy -auto-approve
+1. **Tier 1 Teardown (`make down`):**
+   - **Removes:** 36 dev runtime resources (ALB, listener, rule, target group, ECS cluster, service, tasks, VPC, subnets, route tables, IGW, security groups, CloudWatch alarms, dashboard, log group, and SNS topic), reducing runtime costs to **$0.00/hr**.
+   - **Preserves:** S3 state bucket (`damolak-tfstate-*-eu-north-1`), ECR repository and images (`damolak-api`), SSM API key parameter, AWS Budget, and CI IAM user.
+   ```bash
+   make down
+   ```
 
-# Confirm zero billable resources remain
-AWS_PROFILE=damolak AWS_REGION=eu-north-1 bash scripts/cost-check.sh
-```
+2. **Tier 2 Teardown (`make nuke`):**
+   - Destroys dev runtime resources, shared ECR and IAM resources, and empties the S3 state bucket for full account teardown.
+   ```bash
+   make nuke
+   ```
+
+3. **Verify Zero Billable Resources:**
+   ```bash
+   make cost-check
+   ```
 
 ---
 
