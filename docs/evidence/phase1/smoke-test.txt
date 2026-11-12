@@ -1,8 +1,11 @@
 # Evidence: API container startup and smoke test
-# Commit: 9f2d576048bd548fb2bebc1a2d750a1ce86aa0a9
-# Timestamp (UTC): 2026-11-09T21:26:31Z
+# Commit: 927b279246ee75026c176b2410148884179fb131
+# Timestamp (UTC): 2026-11-12T02:15:33Z
 
 Smoke testing http://127.0.0.1:8000 (expected_sha=local-dev)
-smoke-test: PASS on attempt 1/20
+Attempt 1/20 not ready yet; sleeping 6s...
+Attempt 2/20 not ready yet; sleeping 6s...
+Attempt 3/20 not ready yet; sleeping 6s...
+smoke-test: PASS on attempt 4/20
 health: {"status":"ok","checks":{"config":"ok","metadata":"skipped"}}
-info  : {"service":"damolak-api","version":"0.1.0","git_sha":"local-dev","environment":"local","aws_region":"eu-north-1","task_id":"local","availability_zone":"local","started_at":"2026-11-09T21:27:21.362070Z","uptime_seconds":2.88}
+info  : {"service":"damolak-api","version":"0.1.0","git_sha":"local-dev","environment":"local","aws_region":"eu-north-1","task_id":"local","availability_zone":"local","started_at":"2026-11-12T02:18:04.386280Z","uptime_seconds":6.26}

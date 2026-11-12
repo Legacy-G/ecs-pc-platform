@@ -1,51 +1,11 @@
 # Evidence: Terraform offline plan test for infra/envs/dev
-# Commit: 9f2d576048bd548fb2bebc1a2d750a1ce86aa0a9
-# Timestamp (UTC): 2026-11-09T21:26:31Z
+# Commit: 927b279246ee75026c176b2410148884179fb131
+# Timestamp (UTC): 2026-11-12T02:15:33Z
 
 [31m╷[0m[0m
-[31m│[0m [0m[1m[31mError: [0m[0m[1mModule not installed[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mregistry.terraform.io/hashicorp/aws: the cached package for registry.terraform.io/hashicorp/aws 6.72.0 (in .terraform\providers) does not match any of the checksums recorded in the dependency lock file[0m
 [31m│[0m [0m
-[31m│[0m [0m[0m  on main.tf line 11:
-[31m│[0m [0m  11: [4mmodule "network"[0m {[0m
-[31m│[0m [0m
-[31m│[0m [0mThis module is not yet installed. Run "terraform init" to install all
-[31m│[0m [0mmodules required by this configuration.
-[31m╵[0m[0m
-[31m╷[0m[0m
-[31m│[0m [0m[1m[31mError: [0m[0m[1mModule not installed[0m
-[31m│[0m [0m
-[31m│[0m [0m[0m  on main.tf line 23:
-[31m│[0m [0m  23: [4mmodule "alb"[0m {[0m
-[31m│[0m [0m
-[31m│[0m [0mThis module is not yet installed. Run "terraform init" to install all
-[31m│[0m [0mmodules required by this configuration.
-[31m╵[0m[0m
-[31m╷[0m[0m
-[31m│[0m [0m[1m[31mError: [0m[0m[1mModule not installed[0m
-[31m│[0m [0m
-[31m│[0m [0m[0m  on main.tf line 33:
-[31m│[0m [0m  33: [4mmodule "ecs_cluster"[0m {[0m
-[31m│[0m [0m
-[31m│[0m [0mThis module is not yet installed. Run "terraform init" to install all
-[31m│[0m [0mmodules required by this configuration.
-[31m╵[0m[0m
-[31m╷[0m[0m
-[31m│[0m [0m[1m[31mError: [0m[0m[1mModule not installed[0m
-[31m│[0m [0m
-[31m│[0m [0m[0m  on main.tf line 40:
-[31m│[0m [0m  40: [4mmodule "ecs_service"[0m {[0m
-[31m│[0m [0m
-[31m│[0m [0mThis module is not yet installed. Run "terraform init" to install all
-[31m│[0m [0mmodules required by this configuration.
-[31m╵[0m[0m
-[31m╷[0m[0m
-[31m│[0m [0m[1m[31mError: [0m[0m[1mModule not installed[0m
-[31m│[0m [0m
-[31m│[0m [0m[0m  on main.tf line 71:
-[31m│[0m [0m  71: [4mmodule "observability"[0m {[0m
-[31m│[0m [0m
-[31m│[0m [0mThis module is not yet installed. Run "terraform init" to install all
-[31m│[0m [0mmodules required by this configuration.
+[31m│[0m [0m[0m
 [31m╵[0m[0m
 
 ===============================================================================

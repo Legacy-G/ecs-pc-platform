@@ -1,4 +1,4 @@
 # Evidence: hadolint Dockerfile static analysis
-# Commit: 9f2d576048bd548fb2bebc1a2d750a1ce86aa0a9
-# Timestamp (UTC): 2026-11-09T21:26:31Z
+# Commit: 927b279246ee75026c176b2410148884179fb131
+# Timestamp (UTC): 2026-11-12T02:15:33Z
 
