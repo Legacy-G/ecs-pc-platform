@@ -1,0 +1,28 @@
+# Evidence: Phase 5 Idempotency Drill
+# Commit: bc98c9f
+# Timestamp: 2026-11-12T00:54:00Z
+# Evaluator: Terraform v1.17.0 / AWS Provider v6.72.0
+# Description: terraform plan across bootstrap, shared, and dev stacks verifying 0 changes and full idempotency.
+
+=== Stack 1: infra/bootstrap ===
+Command: terraform -chdir=infra/bootstrap plan
+Result:
+No changes. Your infrastructure matches the configuration.
+Terraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.
+
+=== Stack 2: infra/envs/shared ===
+Command: terraform -chdir=infra/envs/shared plan
+Result:
+No changes. Your infrastructure matches the configuration.
+Terraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.
+
+=== Stack 3: infra/envs/dev ===
+Command: terraform -chdir=infra/envs/dev plan -var="git_sha=bc98c9f" -var="image_tag=bc98c9f" -var="app_version=0.1.1" -var="alert_email="
+Result:
+No changes. Your infrastructure matches the configuration.
+Terraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.
+
+Summary: 0 to add, 0 to change, 0 to destroy across all 3 stacks.
