@@ -91,7 +91,7 @@ plan:
 	AWS_PROFILE=$(AWS_PROFILE) terraform -chdir=infra/envs/$(TF_ENV) plan -input=false
 
 apply:
-	@echo "Refusing unattended apply. Print hourly/daily cost estimate (USD 0.0574/hr, USD 1.38/day) and obtain explicit chat approval first."
+	@echo "Refusing unattended apply. Print hourly/daily cost estimate (USD 0.0533/hr, USD 1.28/day) and obtain explicit chat approval first."
 	@exit 1
 
 destroy:

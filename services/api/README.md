@@ -9,7 +9,7 @@ Stateless FastAPI service built on Python 3.13 (`uvicorn` single-worker runtime)
 | `GET` | `/` | None | HTML status page rendered with Jinja2 (`version`, `git_sha`, `environment`, `aws_region`, `task_id`, `availability_zone`, `uptime`) |
 | `GET` | `/api/v1/health/` | None | Liveness and readiness probe for container and ALB target group health checks |
 | `GET` | `/api/v1/info/` | None | JSON payload containing the same telemetry fields as `/` |
-| `POST` | `/api/v1/echo/` | `X-API-Key` | Constant-time verified secret check echoing request JSON with `request_id` and `git_sha` |
+| `POST` | `/api/v1/echo/` | `X-API-Key` | Constant-time secret check echoing request JSON with `request_id` and `git_sha` |
 | `GET` | `/docs` | None | OpenAPI interactive documentation |
 
 ## Operational Guardrails
@@ -24,4 +24,4 @@ Stateless FastAPI service built on Python 3.13 (`uvicorn` single-worker runtime)
 
 ## Security and Vulnerability Posture
 
-ECR basic scan reports 9 HIGH severity vulnerabilities originating in base Debian 12 (bookworm) operating system packages (`sqlite3`, `zlib`, `util-linux`, `glibc`). None currently have patches available upstream from the Debian security team. Trivy image scanning with `--ignore-unfixed` reports 0 vulnerabilities. Base container images and dependencies are rebuilt and updated weekly through Dependabot.
+Amazon ECR basic scanning reports 9 HIGH severity findings in Debian base packages (`util-linux`, `zlib`, `glibc`, `sqlite3`) for tag `7ef87f8` (`docs/evidence/deployment/ecr-scan-findings.json`). Trivy image scanning with `--ignore-unfixed` reports 0 HIGH or CRITICAL findings (no patched versions available at scan time). Base container images refresh weekly through Dependabot.

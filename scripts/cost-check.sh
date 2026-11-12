@@ -16,8 +16,8 @@ aws freetier get-account-plan-state \
   --query '{Plan:accountPlanType,Status:accountPlanStatus,CreditsUSD:accountPlanRemainingCredits.amount,Expires:accountPlanExpirationDate}' \
   --output table
 
-HOURLY_DEV_COST="0.0574"
-DAILY_DEV_COST="1.38"
+HOURLY_DEV_COST="0.0533"
+DAILY_DEV_COST="1.28"
 echo "== Expected dev running cost in ${REGION} (1 ALB + 2 ALB public IPs + 1 Fargate task + 1 task public IP) =="
 echo "Rate: USD ${HOURLY_DEV_COST}/hr (~USD ${DAILY_DEV_COST}/day). Always destroy with 'make down' when not actively testing."
 echo ""

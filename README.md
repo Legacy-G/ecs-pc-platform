@@ -2,13 +2,13 @@
 
 [![CI](https://github.com/Legacy-G/ecs-pc-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/Legacy-G/ecs-pc-platform/actions/workflows/ci.yml)
 
-Production-ready container platform deploying an authenticated FastAPI telemetry and echo microservice to AWS ECS Fargate behind an Application Load Balancer in region `eu-north-1`.
+FastAPI service on AWS ECS Fargate behind an Application Load Balancer, provisioned with Terraform and deployed by Jenkins.
 
 ---
 
 ## Architecture Overview
 
-The platform provisions an isolated, multi-AZ network architecture hosting containerised workloads on AWS ECS Fargate:
+The platform provisions an isolated, multi-AZ network architecture hosting containerized workloads on AWS ECS Fargate:
 
 - **Compute:** AWS ECS Fargate running Linux AMD64 containers with read-only root filesystems, tmpfs mounted at `/tmp`, and execution constrained to unprivileged user `appuser` (UID 10001).
 - **Networking:** Custom VPC (`10.20.0.0/16`) spanning two Availability Zones (`eu-north-1a`, `eu-north-1b`) with public subnets for external load balancing and direct egress.
@@ -37,7 +37,7 @@ The platform provisions an isolated, multi-AZ network architecture hosting conta
 ├── docs/
 │   ├── adr/                      # Architecture Decision Records (0001 - 0007)
 │   ├── architecture/             # Diagrams as code (Python generator, SVG, PNG)
-│   ├── evidence/                 # Sanitised validation evidence across project phases
+│   ├── evidence/                 # Sanitized validation evidence
 │   ├── manual-setup.md           # Operator procedures requiring personal credentials
 │   ├── REQUIREMENTS.md           # Traceability matrix mapping requirements to evidence
 │   └── RUNBOOK.md                # Operations, monitoring, recovery drills, and teardown
@@ -61,9 +61,9 @@ The platform provisions an isolated, multi-AZ network architecture hosting conta
 ## Prerequisites
 
 - **Docker Desktop** (or Docker Engine with Compose)
-- **Terraform** >= 1.10.0
+- **Terraform** >= 1.17.0, < 2.0.0
 - **AWS CLI v2** configured with `damolak` profile in `eu-north-1`
-- **Python** >= 3.12 with `pip`
+- **Python** >= 3.13, < 3.14 with `pip`
 - **GitHub CLI** (`gh`)
 
 ---
@@ -155,12 +155,12 @@ The AWS account sits within an AWS Organization whose Service Control Policy (SC
   aws logs tail /ecs/damolak-dev --region eu-north-1 --follow
   ```
 - **Operational Dashboard:** Inspect metrics on the CloudWatch dashboard `damolak-dev-overview`.
-- **Active Alarms:** Five CloudWatch alarms protect the service:
-  1. `damolak-dev-alb-5xx`: Fires when ALB 5xx error count exceeds 0.
-  2. `damolak-dev-unhealthy-hosts`: Fires when Target Group UnHealthyHostCount >= 1.
-  3. `damolak-dev-healthy-hosts-low`: Fires when Target Group HealthyHostCount < 1.
-  4. `damolak-dev-cpu-high`: Fires when ECS CPU utilization exceeds 85% for 3 periods.
-  5. `damolak-dev-app-log-errors`: Fires when structured JSON application errors exceed 0 in 1 minute.
+- **Active Alarms:** Five CloudWatch alarms monitor the service:
+  1. `damolak-dev-alb-5xx`: Fires when ALB target 5xx response count exceeds 5 in 1 minute (`threshold = 5`, `period = 60`, `evaluation_periods = 1`, `Sum`).
+  2. `damolak-dev-unhealthy-hosts`: Fires when Target Group `UnHealthyHostCount` exceeds 0 (`>= 1`) for 2 consecutive 1-minute periods (`threshold = 0`, `period = 60`, `evaluation_periods = 2`, `Maximum`).
+  3. `damolak-dev-healthy-hosts-low`: Fires when Target Group `HealthyHostCount` drops below 1 in 1 minute (`threshold = 1`, `period = 60`, `evaluation_periods = 1`, `Minimum`).
+  4. `damolak-dev-cpu-high`: Fires when ECS average CPU utilization exceeds 80% for 2 consecutive 2-minute periods (`threshold = 80`, `period = 120`, `evaluation_periods = 2`, `Average`).
+  5. `damolak-dev-app-log-errors`: Fires when structured JSON `ERROR` log entries exceed 0 (`>= 1`) in 1 minute (`threshold = 0`, `period = 60`, `evaluation_periods = 1`, `Sum`).
 
 ---
 
@@ -171,17 +171,29 @@ The AWS account sits within an AWS Organization whose Service Control Policy (SC
 | **Compute Engine** | AWS ECS Fargate provides fully managed serverless containers without EC2 cluster maintenance overhead. | [ADR 0001](docs/adr/0001-record-architecture-decisions.md) |
 | **Process Model** | Single Uvicorn worker process per container aligns task health directly with container liveness. | [ADR 0002](docs/adr/0002-fastapi-single-uvicorn-worker.md) |
 | **State Storage** | S3 bucket with native lockfile locking provides distributed concurrency protection without DynamoDB tables. | [ADR 0003](docs/adr/0003-terraform-state-and-iam-scoping.md) |
-| **Network Architecture** | Fargate tasks run in public subnets with direct egress to avoid NAT Gateway hourly charges (USD 0.059/hr). | [ADR 0004](docs/adr/0004-network-topology-and-private-subnets.md) |
+| **Network Architecture** | Fargate tasks run in public subnets with direct egress to avoid NAT Gateway hourly charges (USD 0.046/hr). | [ADR 0004](docs/adr/0004-network-topology-and-private-subnets.md) |
 | **Telemetry Costs** | ECS Container Insights is disabled to eliminate custom metric charges and remain within Free Tier credits. | [ADR 0005](docs/adr/0005-disable-ecs-container-insights.md) |
 | **Decoupled ALB** | Load balancer is extracted into an independent module with a default 404 rule to support multi-service growth. | [ADR 0006](docs/adr/0006-decoupled-alb-and-multi-service-routing.md) |
 | **CI Security** | Jenkins performs cloud deployment while GitHub Actions remains CI-only due to AWS Organization SCP denials. | [ADR 0007](docs/adr/0007-github-actions-ci-only-scp-oidc-block.md) |
 
 ---
 
-## Assumptions, Limitations & Future Improvements
+## Assumptions
+
+- Single AWS account and single region (`eu-north-1`).
+- AWS Free plan credits fund the infrastructure under a `USD 40` budget alert guardrail.
+- An AWS Organization Service Control Policy blocks IAM OIDC identity providers and operations outside `eu-north-1`.
+- Public traffic uses HTTP (port 80) because no registered domain is available for an ACM TLS certificate.
+- Development runs one Fargate task (`desired_count = 1`), creating a ~59-second availability gap during task replacement.
+- The Jenkins controller runs locally in Docker (`127.0.0.1:8088`).
+- The deployed runtime stack stays active only while Free plan credits last; `make down` removes hourly-billed resources.
+
+---
+
+## Limitations & Future Improvements
 
 ### Security Limitations & Upstream Vulnerabilities
-- **ECR Basic Scan Findings:** Amazon ECR basic scanning reports 9 HIGH severity vulnerabilities originating from standard Debian 12 (bookworm) base packages (`util-linux`, `zlib`, `glibc`, `sqlite3`). As confirmed against the Debian Security Tracker, none of these packages currently have patches published by upstream maintainers. Trivy container scanning with `--ignore-unfixed` reports 0 vulnerabilities. Base images are refreshed weekly through Dependabot.
+- **ECR Basic Scan Findings:** Amazon ECR basic scanning reports 9 HIGH severity findings in Debian base packages (`util-linux`, `zlib`, `glibc`, `sqlite3`) for tag `7ef87f8` (`docs/evidence/deployment/ecr-scan-findings.json`). Trivy container scanning with `--ignore-unfixed` reports 0 HIGH or CRITICAL findings (no patched versions available at scan time). Base images refresh through Dependabot.
 - **HTTP-Only Listener:** The current ALB listener operates on HTTP port 80. In production, configure an AWS Certificate Manager (ACM) TLS certificate with an HTTPS listener (port 443) and an HTTP-to-HTTPS redirect rule.
 - **Single Task Availability Gap:** In development (`desired_count = 1`), task replacement creates an availability gap of ~59 seconds while Fargate provisions an ENI and passes health checks. Production requires `desired_count >= 2`.
 
@@ -194,18 +206,41 @@ The AWS account sits within an AWS Organization whose Service Control Policy (SC
 
 ---
 
+## Verification
+
+### Executed Checks
+- **Unit tests and coverage:** `pytest` executes 19 tests across endpoints and metadata helpers, achieving 97.69% statement coverage against a 90% threshold.
+- **Container build and read-only runtime:** Docker builds `damolak-api` (211 MB) and runs under `read_only: true` with a `/tmp` tmpfs mount, `appuser` (UID 10001), and `PYTHONDONTWRITEBYTECODE=1`.
+- **Image and IaC scans:** `hadolint` lints `services/api/Dockerfile`, `trivy image --ignore-unfixed` reports 0 HIGH/CRITICAL findings, `trivy config` scans `infra/`, and ECR basic scan records baseline findings on push.
+- **Terraform validation and tests:** `terraform fmt -check`, `terraform validate`, and `tflint` run across all four stacks (`bootstrap`, `shared`, `dev`, `prod`); `terraform test` runs for `bootstrap`, `shared`, `dev`, and modules (`network`, `ecs-service`, `alb`).
+- **Idempotent plans:** `terraform plan` across `bootstrap`, `shared`, and `dev` reports 0 changes.
+- **Alarm notification path:** `aws cloudwatch set-alarm-state` triggers SNS email delivery for `damolak-dev-alb-5xx` and `damolak-dev-healthy-hosts-low`, followed by automatic return to `OK`.
+- **Task replacement timing:** Stopping the active ECS task (`aws ecs stop-task`) measures 59.0 seconds until a replacement task passes ALB health checks.
+- **Deployed smoke test:** `scripts/smoke.sh` verifies `/api/v1/health/`, `/api/v1/info/` git SHA match, `/`, authenticated `POST /api/v1/echo/` (200 vs 401), and unknown route handling (404).
+- **Full-history secret and hygiene scans:** `gitleaks detect --log-opts="--all"` and `scripts/check-hygiene.sh` scan the complete commit history and tracked files with 0 violations.
+- **Destroy plan:** `terraform plan -destroy` on `dev` validates teardown without execution (0 to add, 0 to change, 36 to destroy).
+
+### Not Executed
+- ECS circuit-breaker rollback drill using a deliberately failing container image tag.
+- Full `dev` destroy and rebuild cycle (`make down` followed by re-provisioning).
+
+---
+
 ## Cost Analysis & Teardown
 
-### Running Cost (`eu-north-1`)
+### Running Cost (`eu-north-1`, planning estimate)
 
-| Resource | Hourly Rate (USD) | Monthly Rate (USD) | Notes |
+Monthly estimates use a single 720-hour (30-day) planning estimate basis derived from AWS Price List on-demand rates in `eu-north-1`:
+
+| Resource | Hourly Rate (USD) | Monthly Estimate (720 hrs, USD) | Notes |
 | :--- | :--- | :--- | :--- |
-| **Application Load Balancer** | $0.0225 | $16.20 | Base hourly charge |
-| **ALB Public IPv4 Addresses (2)** | $0.0100 | $7.20 | $0.005/hr per public IP |
-| **ALB LCU (Light Traffic)** | $0.0080 | $5.76 | Baseline evaluation |
-| **Fargate Task (0.25 vCPU, 0.5 GB)** | $0.0119 | $8.57 | Compute and memory |
-| **Fargate Public IPv4 Address** | $0.0050 | $3.60 | Public subnet assignment |
-| **Total Dev Rate** | **$0.0574/hr** | **~$41.33/mo** | ~$1.38/day |
+| **Application Load Balancer (base)** | $0.02394 | $17.24 | Base hourly charge (`EUN1-LoadBalancerUsage`) |
+| **ALB LCU (light traffic)** | $0.00076 | $0.55 | ~0.1 LCU at $0.00760/LCU-hr |
+| **ALB Public IPv4 Addresses (2)** | $0.01000 | $7.20 | $0.00500/hr per public IP across 2 AZs |
+| **Fargate Compute (0.25 vCPU)** | $0.01113 | $8.01 | 0.25 vCPU at $0.04450/vCPU-hr |
+| **Fargate Memory (0.5 GB)** | $0.00245 | $1.76 | 0.5 GB at $0.00490/GB-hr |
+| **Fargate Task Public IPv4 Address** | $0.00500 | $3.60 | 1 ENI public IP at $0.00500/hr |
+| **Total Dev Rate (planning estimate)** | **$0.05328/hr** | **$38.36/mo** | ~$1.28/day |
 
 ### Teardown Procedure
 
