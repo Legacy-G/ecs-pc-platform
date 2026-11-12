@@ -5,7 +5,7 @@
 
 ## Context
 
-AWS VPC best practices recommend isolating compute workloads in private subnets behind a NAT Gateway. However, an AWS NAT Gateway in `eu-north-1` costs USD 0.045 per hour (approx USD 32.40 per month) plus USD 0.045 per GB data processing. On a USD 40 total credit budget, running a NAT Gateway alongside an Application Load Balancer (ALB) would exhaust the credit allowance in days.
+AWS VPC best practices recommend isolating compute workloads in private subnets behind a NAT Gateway. However, an AWS NAT Gateway in `eu-north-1` costs USD 0.046 per hour (USD 33.12 per 720-hour month, planning estimate) plus USD 0.046 per GB data processing (and USD 0.005 per hour for its public IPv4 address). On a USD 40 total credit budget, running a NAT Gateway alongside an Application Load Balancer (ALB) would exhaust the credit allowance in days.
 
 For development (`dev`), workloads run in public subnets with direct egress to AWS public endpoints (ECR, CloudWatch Logs, SSM) over HTTPS (TCP 443), secured strictly by security groups that drop all non-443 egress and only accept ingress from the ALB.
 
@@ -21,9 +21,9 @@ The `network` module defines both public and private subnets, controlled by the 
 ## Alternatives considered
 
 1. **VPC interface endpoints (PrivateLink):** Cost approximately USD 7.20/month per endpoint per AZ for ECR, CloudWatch, and SSM, exceeding the credit allowance.
-2. **NAT Gateway in development:** Incurs USD 32.40/month in fixed charges, which exhausts testing credits.
+2. **NAT Gateway in development:** Incurs USD 33.12 per 720-hour month (plus USD 3.60/month for its public IPv4 address) in base charges, which exhausts testing credits.
 
 ## Consequences
 
-- **Positive:** Saves over USD 32.40 per month in `dev`, allowing the entire challenge infrastructure to remain comfortably under the USD 40 credit ceiling.
+- **Positive:** Avoids USD 36.72 per 720-hour month in NAT Gateway and EIP charges in `dev`, keeping the infrastructure within the USD 40 credit ceiling.
 - **Negative / Limits:** Tasks in `dev` require public IP assignment to reach AWS APIs and ECR. This is mitigated by restricting task security group egress strictly to TCP 443 and allowing ingress exclusively from the ALB security group.

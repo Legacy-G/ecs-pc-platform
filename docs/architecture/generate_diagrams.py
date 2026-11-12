@@ -49,7 +49,7 @@ def generate_aws_architecture(output_svg, output_png):
 
   <!-- Header -->
   <text x="40" y="45" class="title">AWS Infrastructure Architecture - Dev Stack</text>
-  <text x="40" y="68" class="subtitle">Region: eu-north-1 | Single-tenant containerised API with ALB, Fargate, and observability</text>
+  <text x="40" y="68" class="subtitle">Region: eu-north-1 | Single-tenant containerized API with ALB, Fargate, and observability</text>
 
   <!-- AWS Cloud Boundary -->
   <rect x="40" y="90" width="1120" height="670" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
@@ -84,12 +84,12 @@ def generate_aws_architecture(output_svg, output_png):
     <rect x="0" y="340" width="220" height="250" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" />
     <text x="15" y="364" class="box-title">Observability &amp; Alarms</text>
     <text x="15" y="384" class="box-desc">Log Group: /ecs/damolak-dev</text>
-    <text x="15" y="404" class="box-desc">Metric Filter: app_errors [JSON]</text>
-    <text x="15" y="424" class="box-desc">5 Alarms (1-period threshold):</text>
+    <text x="15" y="404" class="box-desc">Metric Filter: damolak-dev-json-error-filter</text>
+    <text x="15" y="424" class="box-desc">5 CloudWatch Metric Alarms:</text>
     <text x="15" y="444" class="box-desc">- damolak-dev-alb-5xx</text>
     <text x="15" y="462" class="box-desc">- damolak-dev-healthy-hosts-low</text>
     <text x="15" y="480" class="box-desc">- damolak-dev-unhealthy-hosts</text>
-    <text x="15" y="498" class="box-desc">- damolak-dev-high-cpu</text>
+    <text x="15" y="498" class="box-desc">- damolak-dev-cpu-high</text>
     <text x="15" y="516" class="box-desc">- damolak-dev-app-log-errors</text>
     <text x="15" y="542" class="box-title" font-size="12px">SNS: damolak-dev-alerts</text>
     <text x="15" y="562" class="box-desc">Dashboard: damolak-dev-overview</text>
@@ -178,7 +178,7 @@ def generate_aws_architecture(output_svg, output_png):
     )
     draw.text(
         (40, 60),
-        "Region: eu-north-1 | Single-tenant containerised API with ALB, Fargate, and observability",
+        "Region: eu-north-1 | Single-tenant containerized API with ALB, Fargate, and observability",
         fill=(100, 116, 139),
         font=f_sub,
     )
@@ -233,7 +233,7 @@ def generate_aws_architecture(output_svg, output_png):
     draw.text((75, 470), "Observability & Alarms", fill=(15, 23, 42), font=f_box_t)
     draw.text(
         (75, 495),
-        "Log Group: /ecs/damolak-dev\nFilter: app_errors [JSON]\n5 Alarms (1-period threshold):\n- damolak-dev-alb-5xx\n- damolak-dev-healthy-hosts-low\n- damolak-dev-unhealthy-hosts\n- damolak-dev-high-cpu\n- damolak-dev-app-log-errors\nSNS: damolak-dev-alerts\nDashboard: damolak-dev-overview",
+        "Log Group: /ecs/damolak-dev\nFilter: damolak-dev-json-error-filter\n5 CloudWatch Metric Alarms:\n- damolak-dev-alb-5xx\n- damolak-dev-healthy-hosts-low\n- damolak-dev-unhealthy-hosts\n- damolak-dev-cpu-high\n- damolak-dev-app-log-errors\nSNS: damolak-dev-alerts\nDashboard: damolak-dev-overview",
         fill=(71, 85, 105),
         font=f_box_d,
     )
